@@ -1,0 +1,16 @@
+# Cache do ERA5, ~386 KB e regenerável: o forecast_santa_maria.py baixa de novo
+# na primeira execução.
+cache/
+
+# Configuração local do Claude Code
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Sistema
+.DS_Store
+Thumbs.db
