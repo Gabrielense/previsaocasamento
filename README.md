@@ -33,12 +33,15 @@ por e-mail como anexo único.
 
 ```
 index.html              página pronta, é o que a Vercel publica
+data/page.json          números da rodada do dia, gerado
 src/
-  template.html         fonte da página, com placeholders de fonte
-  build.py              injeta as fontes e gera o index.html
+  template.html         fonte da página, com placeholders
+  pagedata.py           coleta a rodada do dia e escreve o data/page.json
+  build.py              injeta dados + fontes e gera o index.html
   fonts/                3 arquivos .woff2 + licenças (SIL OFL 1.1)
-forecast_santa_maria.py análise meteorológica semanal
-snapshots/              histórico das execuções semanais
+forecast_santa_maria.py análise meteorológica, relatório de terminal
+snapshots/              histórico das execuções
+.github/workflows/      a automação diária
 ```
 
 ### Alterando a página
@@ -47,8 +50,62 @@ Edite `src/template.html`, nunca o `index.html` (ele é gerado e será
 sobrescrito). Depois:
 
 ```bash
-python src/build.py
+python src/pagedata.py --target 2026-10-03   # busca os números do dia
+python src/build.py                           # gera o index.html
 ```
+
+---
+
+## A atualização automática
+
+A página **se refaz sozinha todo dia**, sem ninguém rodar nada. O workflow
+`.github/workflows/atualiza.yml` roda às 09:00 UTC (06:00 em Santa Maria,
+depois que as rodadas 00Z do ECMWF e do GFS publicam), regenera o
+`index.html` e dá push. A Vercel republica no push, então o site fica novo
+poucos minutos depois.
+
+O commit só acontece se algum número mudou de verdade — `git diff --staged
+--quiet` decide —, então não há commit à toa.
+
+### O que é dinâmico e o que não é
+
+Só entra no `data/page.json` o que realmente muda de um dia para o outro:
+
+| Dinâmico, sai do `page.json` | Estático, fica no template |
+|---|---|
+| data da rodada e dias restantes | os 42%, 20% e 5% de chuva |
+| os 50 cenários do SEAS5 | a grade dos 35 anos |
+| a previsão determinística (a partir de 18/set) | as curvas horárias de temperatura e vento |
+| o veredito | a seção do El Niño |
+| a tabela de convergência | as recomendações práticas |
+
+A climatologia é fixa de propósito: são 35 anos de medição já fechados, não
+mudam nunca. Deixá-la no template evita requisição desnecessária e mantém a
+página funcionando mesmo se o `page.json` faltar — nesse caso o build ainda
+gera uma página válida, só sem os blocos do dia.
+
+### A virada de 18 de setembro
+
+Enquanto faltarem mais de 15 dias, `page.json` sai com `tier: "sazonal"` e a
+seção **“O que os modelos estão vendo agora”** fica escondida, porque não há o
+que mostrar. Em **18 de setembro** o dia 3 entra no alcance de 16 dias, o tier
+vira `deterministico` e a seção aparece sozinha, com a tabela dos quatro
+modelos e a dispersão entre eles.
+
+### O veredito é escrito por regra, não à mão
+
+`veredito()` em `src/pagedata.py` monta o texto a partir dos números, sem
+julgamento humano:
+
+- **fora do alcance** → sempre a mesma resposta, porque a física não muda:
+  não existe previsão, e o número honesto é a climatologia.
+- **dentro do alcance** → o tom vem da probabilidade de chuva dos conjuntos
+  (`≤25%` tende a não chover · `≥60%` chuva provável · no meio, indefinido) e
+  a confiança vem da dispersão entre os modelos determinísticos (`≤5 mm` de
+  diferença = concordam). Rajada acima de 40 km/h acrescenta um aviso.
+
+Se algum dia a redação precisar mudar, mude a função — não o HTML, que é
+regenerado.
 
 ---
 

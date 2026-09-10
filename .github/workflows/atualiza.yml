@@ -1,0 +1,84 @@
+name: Atualiza a previsão
+
+# Roda todo dia às 09:00 UTC, ou seja, 06:00 em Santa Maria. A essa hora as
+# rodadas 00Z do ECMWF e do GFS já publicaram, então a página do dia sai com o
+# dado mais fresco possível.
+#
+# Antes de 18 de setembro o dia 3 está fora do alcance dos modelos e a página
+# quase não muda: o job roda mesmo assim, mas o passo de commit só grava se o
+# conteúdo realmente mudou, então não gera commit à toa.
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:        # permite rodar na mão pelo botão do GitHub
+
+# Necessário para o GITHUB_TOKEN conseguir dar push de volta no repositório.
+permissions:
+  contents: write
+
+concurrency:
+  group: atualiza-previsao
+  cancel-in-progress: false
+
+jobs:
+  atualiza:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # O ERA5 são 35 anos e ~400 KB; baixar todo dia seria desperdício e um
+      # abuso da API pública do Open-Meteo. O cache é reaproveitado entre as
+      # execuções e só se refaz se o script mudar de versão de cache.
+      - name: Cache da climatologia do ERA5
+        uses: actions/cache@v4
+        with:
+          path: cache
+          key: era5-v2-${{ hashFiles('forecast_santa_maria.py') }}
+          restore-keys: era5-v2-
+
+      - name: Roda a análise e grava o snapshot do dia
+        run: python forecast_santa_maria.py --target 2026-10-03 --compare
+
+      - name: Monta o data/page.json
+        run: python src/pagedata.py --target 2026-10-03
+
+      - name: Gera o index.html
+        run: python src/build.py
+
+      # Sanidade: se o build cuspir uma página quebrada, é melhor falhar aqui
+      # do que publicar. Confere que o placeholder foi substituído, que a meta
+      # viewport sobreviveu e que o arquivo tem tamanho de página inteira.
+      - name: Confere o que foi gerado
+        run: |
+          python - <<'PY'
+          import io, os, sys
+          h = io.open("index.html", encoding="utf-8").read()
+          erros = []
+          if "__PAGE_DATA__" in h:      erros.append("placeholder __PAGE_DATA__ nao foi substituido")
+          if "__QUICKSAND__" in h:      erros.append("fonte nao foi embutida")
+          if "width=device-width" not in h: erros.append("meta viewport sumiu")
+          if "var PAGE = null" in h:    erros.append("page.json ausente no build")
+          if len(h) < 120_000:          erros.append("index.html pequeno demais: %d bytes" % len(h))
+          if erros:
+              print("\n".join("ERRO: " + e for e in erros)); sys.exit(1)
+          print("index.html ok: %d KB" % (len(h.encode()) / 1024))
+          PY
+
+      - name: Publica se algo mudou
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html data/page.json snapshots/
+          if git diff --staged --quiet; then
+            echo "Nada mudou hoje, nenhum commit."
+          else
+            git commit -m "Previsão de $(date -u +%d/%m/%Y) para 3 de outubro"
+            git push
+            echo "Publicado."
+          fi
