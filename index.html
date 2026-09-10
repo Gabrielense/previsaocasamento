@@ -259,6 +259,19 @@ ol.cdlist li.big .cd-num{border-right-color:var(--olive-line)}
 .bar-pct{font-family:var(--title); font-weight:600; font-size:17px; text-align:right;
   color:var(--accent-text); font-variant-numeric:tabular-nums}
 
+/* ---- dois números lado a lado, para desfazer confusão ---- */
+.twonum{display:grid; grid-template-columns:1fr 1fr; gap:13px}
+@media (max-width:560px){ .twonum{grid-template-columns:1fr} }
+.tn{border:1px solid var(--olive-line); background:var(--olive-pale); border-radius:4px;
+  padding:18px 19px; display:flex; flex-direction:column; gap:5px}
+.tn.alt{border-color:var(--rule); background:var(--bg)}
+.tn .n{font-family:var(--title); font-weight:600; font-size:33px; line-height:1;
+  color:var(--accent-text); font-variant-numeric:tabular-nums}
+.tn.alt .n{color:var(--fg-soft)}
+.tn .k{font-weight:700; font-size:10.5px; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--fg-soft)}
+.tn p{font-size:14px; line-height:1.5}
+
 /* ---- notas ---- */
 .note{border-left:3px solid var(--olive-line); padding:3px 0 3px 18px; font-size:15px}
 .note.alt{border-left-color:var(--slate); opacity:.98}
@@ -417,6 +430,24 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
 
     <p class="note">Repare que os anos mais chuvosos não estão espalhados por acaso: <strong>2002 teve 42 mm</strong> e <strong>2000 teve 34 mm</strong>, os dois maiores da série. Ambos foram anos de El Niño — que é exatamente o que está acontecendo de novo agora, e com mais força. É por isso que a seção do El Niño, mais abaixo, importa mais nesta análise do que importava na anterior.</p>
     <p class="note alt">E a ressalva que vale para tudo nesta página: <strong>42% é a média histórica, não uma previsão do dia 3</strong>. O número real para o dia 3 só existe a partir de 18 de setembro, e vai ser bem diferente de 42% — para cima ou para baixo, conforme o que os modelos enxergarem.</p>
+
+    <div class="card">
+      <h3>42% ou 52%? Os dois aparecem aqui, e são coisas diferentes</h3>
+      <p style="font-size:15px">Mais abaixo você vai ver um <strong>52%</strong>, e vale explicar a diferença antes que ela confunda:</p>
+      <div class="twonum">
+        <div class="tn">
+          <span class="n">42%</span>
+          <span class="k">O que já aconteceu</span>
+          <p>Dos <strong>385 dias medidos de verdade</strong> nesta época, ao longo de 35 anos, 42% tiveram chuva. É contagem de fatos, não opinião de modelo.</p>
+        </div>
+        <div class="tn alt">
+          <span class="n">52%</span>
+          <span class="k">O que um modelo acha</span>
+          <p>Dos <strong>50 cenários</strong> que o modelo sazonal simulou para o dia 3 na rodada de 10/09, 52% tiveram chuva. Na rodada de 1º/08 tinham sido 46%.</p>
+        </div>
+      </div>
+      <p style="font-size:15px"><strong>Use o 42%.</strong> A amostra é quase oito vezes maior e é feita de dias reais. E o 52% não acrescenta informação: a esta distância o modelo sazonal é estatisticamente indistinguível da própria climatologia, ou seja, ele está repetindo a média com passos a mais. Aquele pulinho de 46% para 52% é o modelo balançando sozinho, não a chuva aumentando.</p>
+    </div>
   </section>
 
   <section class="band">
@@ -425,9 +456,9 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
 
     <div class="changed">
       <div class="chg">
-        <span class="k">Chance de chuva no dia 3</span>
+        <span class="k">Chuva, só no modelo sazonal</span>
         <span class="move"><span class="was">46%</span><span class="arw">→</span>52%</span>
-        <span class="r">Subiu 6 pontos entre as duas rodadas do modelo sazonal. É um movimento pequeno, dentro do ruído — mas foi para cima, não para baixo.</span>
+        <span class="r"><strong>Não confunda com os 42% da página.</strong> Este é o modelo sazonal se mexendo entre duas rodadas suas, 6 pontos, dentro do ruído. Os 42% continuam sendo o número para levar a sério.</span>
       </div>
       <div class="chg">
         <span class="k">El Niño muito forte</span>
@@ -493,12 +524,12 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
             <tr>
               <td class="who">ECMWF SEAS5</td><td class="kind">Sazonal · 50 cenários</td>
               <td class="num" data-l="Alcance">6 meses</td><td class="num" data-l="Diz algo hoje?"><strong>sim</strong></td>
-              <td class="say">Máx. <strong>21,7 °C</strong> · chuva <strong>52%</strong> · mas ver a ressalva abaixo.</td>
+              <td class="say">Máx. <strong>21,7 °C</strong> · chuva <strong>52%</strong> nos 50 cenários dele — mas ver a ressalva abaixo.</td>
             </tr>
             <tr class="blend">
               <td class="who">Climatologia</td><td class="kind">ERA5 · 35 anos</td>
               <td class="num" data-l="Alcance">sempre</td><td class="num" data-l="Diz algo hoje?"><strong>sim</strong></td>
-              <td class="say">Máx. <strong>21,7 °C</strong> · chuva <strong>42%</strong> · rajada <strong>36 km/h</strong></td>
+              <td class="say">Máx. <strong>21,7 °C</strong> · chuva <strong>42%</strong> · rajada <strong>36 km/h</strong>. É daqui que sai o 42% da página.</td>
             </tr>
           </tbody>
         </table>
@@ -694,7 +725,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
       </div>
       <div class="src">
         <div class="src-top"><span class="src-name">ECMWF SEAS5</span><span class="src-org">Centro Europeu de Previsões · via Open-Meteo</span></div>
-        <p class="src-used">O modelo climático de longo prazo do Centro Europeu, rodado 50 vezes. Daqui saíram <strong>o gráfico das 50 bolinhas</strong> (temperaturas de 14,2 a 32,4 °C e a chuva de cada cenário) e os <strong>52%</strong> de chance de chuva.</p>
+        <p class="src-used">O modelo climático de longo prazo do Centro Europeu, rodado 50 vezes. Daqui saíram <strong>o gráfico das 50 bolinhas</strong> (temperaturas de 14,2 a 32,4 °C e a chuva de cada cenário) e os <strong>52%</strong> de chuva <em>dos cenários dele</em> — que não é o 42% da página, esse vem do ERA5.</p>
         <span class="src-url">seasonal-api.open-meteo.com · rodada de 10 de setembro de 2026</span>
       </div>
       <div class="src">
