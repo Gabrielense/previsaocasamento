@@ -98,6 +98,15 @@ section.band{display:flex; flex-direction:column; gap:24px; padding:62px 0 0}
 .verdict[data-tom="bom"] .vh{background:var(--olive-fill)}
 .verdict[data-tom="ruim"] .vh{background:#E7D9B8}
 .verdict[data-tom="neutro"] .vh{background:var(--olive-pale)}
+/* No dia do casamento a página deixa de ser um relatório e vira um recado. */
+.verdict[data-tom="casamento"]{border-color:var(--olive); border-width:2px}
+.verdict[data-tom="casamento"] .vh{background:var(--olive); padding-top:19px; padding-bottom:19px}
+.verdict[data-tom="casamento"] .vh .tag{color:#FFF; opacity:.85}
+.verdict[data-tom="casamento"] .vh .say{color:#FFF; font-size:clamp(21px,4.2vw,27px)}
+.verdict[data-tom="casamento"] .vb p{font-size:16px}
+.hearts{display:flex; gap:9px; justify-content:center; align-items:center;
+  color:var(--accent); padding-top:4px}
+.hearts svg{display:block}
 .verdict .vb{padding:24px 26px; display:flex; flex-direction:column; gap:13px}
 .verdict .vb p{font-size:15.5px}
 @media (max-width:520px){ .verdict .vh{padding:14px 18px} .verdict .vb{padding:20px 18px} }
@@ -385,7 +394,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     </svg>
     <p class="kicker">Santa Maria · Rio Grande do Sul · cerimônia às 17h30</p>
     <h1>O tempo no dia 3 de outubro de 2026</h1>
-    <p class="sub">A pergunta é uma só: vai chover? Análise refeita em 10 de setembro, agora com sete fontes em vez de três.</p>
+    <p class="sub" id="heroSub">A pergunta é uma só: vai chover? Análise refeita em 10 de setembro, agora com sete fontes em vez de três.</p>
   </header>
 
   <section class="band">
@@ -474,7 +483,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     </div>
   </section>
 
-  <section class="band">
+  <section class="band" id="secMudou">
     <div class="head"><span class="lbl">Desde 1º de agosto</span><h2>O que mudou de lá para cá</h2><span class="rule"></span></div>
     <p style="text-align:center; margin:0 auto">A análise anterior foi feita com 63 dias de antecedência. Esta foi feita com 23. Comparando as duas rodadas do mesmo modelo, o que se moveu foi isto:</p>
 
@@ -603,7 +612,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     <p class="note alt">Trocando para temperatura, os cenários vão de <strong>14,2 °C</strong> a <strong>32,4 °C</strong> — 18 graus entre o mais frio e o mais quente. Mesmo assim a temperatura preocupa menos: qualquer ponto dessa faixa dá uma festa boa, o que não é verdade para a chuva.</p>
   </section>
 
-  <section class="band">
+  <section class="band" id="secCalendario">
     <div class="head"><span class="lbl">O calendário</span><h2>Quando a previsão começa a valer</h2><span class="rule"></span></div>
     <p style="text-align:center; margin:0 auto">A confiança não cresce devagarinho todo dia. Ela dá saltos, em três momentos bem definidos. Abaixo, quanto falta para cada um deles.</p>
 
@@ -716,7 +725,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     <p class="note alt">O que isso muda na prática: nada sobre o dia 3, e bastante sobre o <strong>plano B</strong>. Num outubro de El Niño histórico, a chance de o plano B ser usado em <em>algum</em> momento da semana do casamento é bem maior que o normal. Vale contratá-lo com folga.</p>
   </section>
 
-  <section class="band">
+  <section class="band" id="secPratica">
     <div class="head"><span class="lbl">Na prática</span><h2>O que fazer com tudo isso agora</h2><span class="rule"></span></div>
 
     <ol class="doit">
@@ -788,8 +797,8 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
       <path d="M29 12c-5 0-9-2-11-6 4-1 9 1 11 6zM29 12c5 0 9-2 11-6-4-1-9 1-11 6z" fill="currentColor" opacity=".55"/>
       <circle cx="29" cy="5" r="3.2" fill="currentColor" opacity=".7"/>
     </svg>
-    <span>Análise refeita em 10 de setembro de 2026 · Santa Maria/RS, coordenadas −29,684 e −53,807</span>
-    <span>Próxima atualização com informação nova: <strong>18 de setembro de 2026</strong>, quando o dia 3 entra no alcance dos modelos.</span>
+    <span id="ftRun">Análise refeita em 10 de setembro de 2026 · Santa Maria/RS, coordenadas −29,684 e −53,807</span>
+    <span id="ftNext">Próxima atualização com informação nova: <strong>18 de setembro de 2026</strong>, quando o dia 3 entra no alcance dos modelos.</span>
   </footer>
 </div>
 
@@ -904,6 +913,58 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     }
     var st = document.getElementById("vStamp");
     if(st && PAGE.run_br) st.textContent = PAGE.run_br;
+
+    var ftRun = document.getElementById("ftRun");
+    if(ftRun && PAGE.run_br){
+      ftRun.textContent = "Análise refeita em " + PAGE.run_br +
+        " · Santa Maria/RS, coordenadas −29,684 e −53,807";
+    }
+    var ftNext = document.getElementById("ftNext");
+    if(ftNext){
+      if(PAGE.encerrado){
+        ftNext.innerHTML = "Esta página se atualizou sozinha todo dia entre 1º de agosto " +
+          "e 3 de outubro de 2026. Aqui ela para.";
+      } else if(PAGE.tier === "deterministico"){
+        ftNext.innerHTML = "Atualiza sozinha todo dia de manhã, até o dia 3 de outubro.";
+      }
+    }
+
+    /* --- o dia chegou: a página encerra o expediente ---------------------
+       Contagem regressiva, "o que mudou desde agosto" e a lista de
+       recomendações existem para quem ainda está esperando. Depois do dia 3
+       viram ruído em volta do que importa, então somem. O resto da página
+       — chuva, climatologia, El Niño, fontes — fica de pé como registro. */
+    if(PAGE.encerrado){
+      var sub = document.getElementById("heroSub");
+      if(sub){
+        sub.textContent = "O registro de dois meses de previsão, encerrado no dia " +
+          "do casamento. Abaixo, como o tempo ficou — e tudo que dava para saber antes.";
+      }
+
+      ["secMudou","secCalendario","secPratica"].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.hidden = true;
+      });
+
+      var stampP = document.querySelector(".stamp");
+      if(stampP){
+        stampP.innerHTML = "Última atualização em <strong>" + esc(PAGE.run_br) +
+          "</strong> · esta página parou de se atualizar, e fica como registro";
+      }
+
+      /* dois raminhos ladeando o recado, no lugar da faixa de data */
+      var vh = document.querySelector('.verdict[data-tom="casamento"]');
+      if(vh){
+        var sprig = '<svg width="26" height="14" viewBox="0 0 58 30" fill="none" aria-hidden="true">' +
+          '<path d="M29 29V7" stroke="currentColor" stroke-width="1.4"/>' +
+          '<path d="M29 12c-5 0-9-2-11-6 4-1 9 1 11 6zM29 12c5 0 9-2 11-6-4-1-9 1-11 6z" fill="currentColor" opacity=".6"/>' +
+          '<circle cx="29" cy="5" r="3.2" fill="currentColor" opacity=".75"/></svg>';
+        var h4 = document.createElement("div");
+        h4.className = "hearts";
+        h4.innerHTML = sprig + sprig + sprig;
+        vh.querySelector(".vb").appendChild(h4);
+      }
+    }
 
     /* --- os 50 cenários do gráfico vêm da rodada do dia --- */
     if(PAGE.seas5 && PAGE.seas5.tmax && PAGE.seas5.tmax.length){

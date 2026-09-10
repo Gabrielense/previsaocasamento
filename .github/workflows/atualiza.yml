@@ -4,21 +4,28 @@ name: Atualiza a previsão
 # rodadas 00Z do ECMWF e do GFS já publicaram, então a página do dia sai com o
 # dado mais fresco possível.
 #
-# Antes de 18 de setembro o dia 3 está fora do alcance dos modelos e a página
-# quase não muda: o job roda mesmo assim, mas o passo de commit só grava se o
-# conteúdo realmente mudou, então não gera commit à toa.
+# O casamento é 3 de outubro de 2026, e este workflow se encerra sozinho:
+#   - até 2/out  : atualiza a página normalmente;
+#   - em 3/out   : roda uma última vez (a página vira recado de parabéns) e
+#                  em seguida se desliga pela API;
+#   - de 4/out em diante: se por algum motivo ainda estiver ligado, o primeiro
+#                  passo desliga e sai sem tocar em nada.
 on:
   schedule:
     - cron: "0 9 * * *"
-  workflow_dispatch:        # permite rodar na mão pelo botão do GitHub
+  workflow_dispatch:
 
-# Necessário para o GITHUB_TOKEN conseguir dar push de volta no repositório.
 permissions:
-  contents: write
+  contents: write          # para dar push do index.html regerado
+  actions: write           # para conseguir desligar a si mesmo
 
 concurrency:
   group: atualiza-previsao
   cancel-in-progress: false
+
+env:
+  ALVO: "2026-10-03"
+  TZ_LOCAL: "America/Sao_Paulo"
 
 jobs:
   atualiza:
@@ -28,7 +35,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Data em horário de Santa Maria, não em UTC: às 09:00 UTC ainda é o dia
+      # anterior em alguns fusos, e o que vale aqui é o calendário do casal.
+      - name: Que dia é hoje, e ainda faz sentido rodar?
+        id: quando
+        run: |
+          HOJE=$(TZ="$TZ_LOCAL" date +%F)
+          LEAD=$(( ( $(date -d "$ALVO" +%s) - $(date -d "$HOJE" +%s) ) / 86400 ))
+          echo "hoje=$HOJE"   >> "$GITHUB_OUTPUT"
+          echo "lead=$LEAD"   >> "$GITHUB_OUTPUT"
+          if [ "$LEAD" -lt 0 ]; then
+            echo "passou=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "passou=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Hoje $HOJE · alvo $ALVO · faltam $LEAD dia(s)."
+
+      # Caminho de segurança: se o casamento já passou e o workflow ainda está
+      # ativo, desliga e encerra sem mexer na página.
+      - name: Já passou — desliga e sai
+        if: steps.quando.outputs.passou == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "O casamento já passou. Desligando o workflow."
+          gh api -X PUT \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/atualiza.yml/disable" \
+            && echo "Workflow desativado." \
+            || echo "Não consegui desativar; o passo seguinte não roda de qualquer forma."
+
       - uses: actions/setup-python@v5
+        if: steps.quando.outputs.passou == 'false'
         with:
           python-version: "3.12"
 
@@ -36,6 +73,7 @@ jobs:
       # abuso da API pública do Open-Meteo. O cache é reaproveitado entre as
       # execuções e só se refaz se o script mudar de versão de cache.
       - name: Cache da climatologia do ERA5
+        if: steps.quando.outputs.passou == 'false'
         uses: actions/cache@v4
         with:
           path: cache
@@ -43,34 +81,39 @@ jobs:
           restore-keys: era5-v2-
 
       - name: Roda a análise e grava o snapshot do dia
-        run: python forecast_santa_maria.py --target 2026-10-03 --compare
+        if: steps.quando.outputs.passou == 'false'
+        run: python forecast_santa_maria.py --target "$ALVO" --compare
 
       - name: Monta o data/page.json
-        run: python src/pagedata.py --target 2026-10-03
+        if: steps.quando.outputs.passou == 'false'
+        run: python src/pagedata.py --target "$ALVO"
 
       - name: Gera o index.html
+        if: steps.quando.outputs.passou == 'false'
         run: python src/build.py
 
       # Sanidade: se o build cuspir uma página quebrada, é melhor falhar aqui
       # do que publicar. Confere que o placeholder foi substituído, que a meta
       # viewport sobreviveu e que o arquivo tem tamanho de página inteira.
       - name: Confere o que foi gerado
+        if: steps.quando.outputs.passou == 'false'
         run: |
           python - <<'PY'
-          import io, os, sys
+          import io, sys
           h = io.open("index.html", encoding="utf-8").read()
           erros = []
-          if "__PAGE_DATA__" in h:      erros.append("placeholder __PAGE_DATA__ nao foi substituido")
-          if "__QUICKSAND__" in h:      erros.append("fonte nao foi embutida")
+          if "__PAGE_DATA__" in h:          erros.append("placeholder __PAGE_DATA__ nao foi substituido")
+          if "__QUICKSAND__" in h:          erros.append("fonte nao foi embutida")
           if "width=device-width" not in h: erros.append("meta viewport sumiu")
-          if "var PAGE = null" in h:    erros.append("page.json ausente no build")
-          if len(h) < 120_000:          erros.append("index.html pequeno demais: %d bytes" % len(h))
+          if "var PAGE = null" in h:        erros.append("page.json ausente no build")
+          if len(h) < 120_000:              erros.append("index.html pequeno demais: %d bytes" % len(h))
           if erros:
               print("\n".join("ERRO: " + e for e in erros)); sys.exit(1)
           print("index.html ok: %d KB" % (len(h.encode()) / 1024))
           PY
 
       - name: Publica se algo mudou
+        if: steps.quando.outputs.passou == 'false'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -78,7 +121,24 @@ jobs:
           if git diff --staged --quiet; then
             echo "Nada mudou hoje, nenhum commit."
           else
-            git commit -m "Previsão de $(date -u +%d/%m/%Y) para 3 de outubro"
+            if [ "${{ steps.quando.outputs.lead }}" -eq 0 ]; then
+              git commit -m "O grande dia: 3 de outubro de 2026. Felicidades!"
+            else
+              git commit -m "Previsão de $(TZ="$TZ_LOCAL" date +%d/%m/%Y) para 3 de outubro"
+            fi
             git push
             echo "Publicado."
           fi
+
+      # Último ato: no dia do casamento a página já foi publicada com o recado
+      # de parabéns, então o workflow se desliga. Nenhuma execução depois desta.
+      - name: É hoje — publica e encerra de vez
+        if: steps.quando.outputs.lead == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Hoje é o casamento. Esta foi a última atualização."
+          gh api -X PUT \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/atualiza.yml/disable" \
+            && echo "Workflow desativado. Felicidades aos dois!" \
+            || { echo "Falhei ao desativar o workflow."; exit 1; }

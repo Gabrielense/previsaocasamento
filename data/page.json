@@ -17,7 +17,9 @@
   }
  ],
  "det": null,
+ "encerrado": false,
  "ens": {},
+ "fase": "espera",
  "lead_days": 23,
  "run_br": "10 de setembro de 2026",
  "run_date": "2026-09-10",

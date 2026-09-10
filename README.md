@@ -92,6 +92,42 @@ que mostrar. Em **18 de setembro** o dia 3 entra no alcance de 16 dias, o tier
 vira `deterministico` e a seção aparece sozinha, com a tabela dos quatro
 modelos e a dispersão entre eles.
 
+### O encerramento em 3 de outubro
+
+O workflow **se desliga sozinho** no dia do casamento. Não fica rodando para
+sempre nem enchendo o histórico de commits depois que a página deixou de ter
+função:
+
+| Dia | O que acontece |
+|---|---|
+| até 2/out | atualiza a página normalmente |
+| **3/out** | roda uma última vez, a página vira recado de parabéns, e o workflow **se desativa** pela API do GitHub |
+| 4/out em diante | se ainda estiver ligado por algum motivo, o primeiro passo desativa e sai sem tocar em nada |
+
+Por isso o workflow pede `permissions: actions: write`: é o que permite ele
+chamar `PUT /actions/workflows/atualiza.yml/disable` em si mesmo. O passo que
+decide isso compara a data **no fuso de Santa Maria**, não em UTC — às 09:00
+UTC ainda é o dia anterior em alguns fusos, e o que vale aqui é o calendário
+do casal.
+
+Para religar depois (se algum dia quiser reaproveitar para outra data), basta
+o botão **Enable workflow** na aba Actions.
+
+### A página no dia, e depois
+
+Quando `lead` chega a zero, `page.json` sai com `encerrado: true` e a página
+para de ser relatório:
+
+- o veredito vira **“Hoje é o dia. Parabéns aos dois!”**, com a previsão real
+  daquele dia logo abaixo e três raminhos no fim;
+- somem a contagem regressiva, o “o que mudou desde agosto” e a lista de
+  recomendações — tudo isso existe para quem ainda está esperando;
+- ficam de pé a chuva, a climatologia, o El Niño e as fontes, como registro;
+- o rodapé passa a dizer que a página parou de se atualizar.
+
+Como o workflow se desliga logo em seguida, é nesse estado que a página
+**congela para sempre**, virando lembrança do dia em vez de um site vencido.
+
 ### O veredito é escrito por regra, não à mão
 
 `veredito()` em `src/pagedata.py` monta o texto a partir dos números, sem

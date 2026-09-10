@@ -57,6 +57,11 @@ NOMES = {
 PRINCIPAIS = ["ecmwf_ifs025", "gfs_seamless", "icon_seamless", "gem_seamless"]
 
 
+def _num(v):
+    """Numero no padrao brasileiro, com virgula decimal."""
+    return ("%.1f" % v).replace(".", ",")
+
+
 def data_br(d):
     return "%d de %s de %d" % (d.day, MESES_ACC[d.month - 1], d.year)
 
@@ -76,6 +81,45 @@ def veredito(lead, seas5, det, ens, clim_p_rain, dia_alvo="3 de outubro"):
     mensuraveis: a probabilidade de chuva nos conjuntos e o quanto os modelos
     determinsticos concordam entre si.
     """
+    # --- o dia chegou: a pagina para de prever e vira recado ----------------
+    if lead == 0:
+        hoje = []
+        if det and det.get("blend"):
+            b = det["blend"]
+            pedaco = []
+            if b.get("tmax") is not None:
+                pedaco.append("máxima de <strong>%s °C</strong>" % _num(b["tmax"]))
+            if ens.get("p_rain_1mm") is not None:
+                pedaco.append("<strong>%d%% de chance de chuva</strong>" % ens["p_rain_1mm"])
+            if b.get("gust") is not None:
+                pedaco.append("rajada de até <strong>%d km/h</strong>" % round(b["gust"]))
+            if pedaco:
+                hoje.append("Para hoje os modelos dão " + ", ".join(pedaco) +
+                            ". Seja o que for, agora é olhar pela janela e aproveitar.")
+        return {
+            "tom": "casamento",
+            "headline": "Hoje é o dia. Parabéns aos dois!",
+            "paras": hoje + [
+                "Esta página passou dois meses dizendo que ninguém consegue prever um "
+                "dia específico com antecedência. Chegou a hora em que isso deixa de "
+                "importar: o tempo hoje é o tempo que vai fazer, e ele não muda mais "
+                "com previsão nenhuma.",
+                "Que seja um casamento lindo. <strong>Felicidades!</strong>",
+            ],
+        }
+
+    # --- depois: a pagina fica parada, como lembranca -----------------------
+    if lead < 0:
+        return {
+            "tom": "casamento",
+            "headline": "O casamento foi em %s. Felicidades aos dois!" % dia_alvo,
+            "paras": [
+                "Esta página acompanhou a previsão do tempo por dois meses, de "
+                "1º de agosto até o grande dia, e parou de se atualizar em "
+                "%s. O que está aqui embaixo é o registro de como ficou." % dia_alvo,
+            ],
+        }
+
     if det is None:
         falta = lead - 15
         quando = "hoje" if falta <= 0 else ("amanhã" if falta == 1 else "em %d dias" % falta)
@@ -128,23 +172,24 @@ def veredito(lead, seas5, det, ens, clim_p_rain, dia_alvo="3 de outubro"):
     else:
         tom, head = "neutro", "Ainda indefinido: %d%% de chance de chuva, %s." % (p, ref)
 
+    quanto = ("Falta <strong>1 dia</strong>" if lead == 1
+              else "Faltam <strong>%d dias</strong>" % lead)
     paras = [
-        "Faltam <strong>%d dias</strong>, então o dia 3 já está dentro do alcance dos "
-        "modelos e esta página passou a mostrar <strong>previsão de verdade</strong>, e não "
-        "só média histórica." % lead,
+        "%s, então o dia 3 já está dentro do alcance dos modelos e esta página passou "
+        "a mostrar <strong>previsão de verdade</strong>, e não só média histórica." % quanto,
         "Os conjuntos dão <strong>%d%% de chance de chuva</strong> e <strong>%d%% de chance "
         "de chuva forte</strong>, acima de 10 mm." % (p, p10 if p10 is not None else 0),
     ]
     if concordam:
         paras.append(
             "E os modelos <strong>concordam entre si</strong>: a diferença entre o mais "
-            "seco e o mais chuvoso é de apenas %.1f mm. Quando fontes independentes "
-            "convergem assim, dá para confiar no sinal." % spread)
+            "seco e o mais chuvoso é de apenas %s mm. Quando fontes independentes "
+            "convergem assim, dá para confiar no sinal." % _num(spread))
     else:
         paras.append(
             "Mas os modelos <strong>ainda discordam</strong>: do mais seco ao mais chuvoso "
-            "vão %.1f mm de diferença. Enquanto essa distância não encolher, o número "
-            "acima ainda vai mudar." % spread)
+            "vão %s mm de diferença. Enquanto essa distância não encolher, o número "
+            "acima ainda vai mudar." % _num(spread))
     if gust >= 40:
         paras.append(
             "Atenção ao <strong>vento</strong>: a maior rajada prevista é de %d km/h, o "
@@ -252,6 +297,13 @@ def main():
         "target": target.isoformat(),
         "lead_days": lead,
         "tier": "deterministico" if det else "sazonal",
+        # A fase manda a pagina esconder o que deixou de fazer sentido: depois
+        # que o dia chega, contagem regressiva e "o que mudou desde agosto"
+        # viram ruido, e o que importa e o recado.
+        "fase": ("depois" if lead < 0 else
+                 "casamento" if lead == 0 else
+                 "previsao" if det else "espera"),
+        "encerrado": lead <= 0,
         "clim_p_rain": clim_p_rain,
         "veredito": veredito(lead, seas5, det, ens, clim_p_rain,
                              "%d de %s" % (target.day, MESES_ACC[target.month - 1])),
