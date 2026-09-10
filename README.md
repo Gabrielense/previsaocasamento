@@ -22,7 +22,7 @@ raiz automaticamente. Cada push na branch `main` republica o site.
 
 ### Por que a página é um arquivo só
 
-O `index.html` tem 140 KB e faz **zero requisições de rede**. As fontes estão
+O `index.html` tem 160 KB e faz **zero requisições de rede**. As fontes estão
 embutidas como data URI e todos os dados estão no próprio JavaScript. Isso
 significa que ele funciona offline, aberto direto do disco, e pode ser enviado
 por e-mail como anexo único.
@@ -64,7 +64,7 @@ a fonte certa conforme quanto falta para a data:
 | Antecedência | O que ele usa | Período |
 |---|---|---|
 | mais de 15 dias | ECMWF SEAS5 sazonal, 50 cenários, mais climatologia | até 17/set/2026 |
-| 15 dias ou menos | 6 modelos determinísticos, 3 conjuntos (119 membros), mais climatologia | 18/set a 3/out/2026 |
+| 15 dias ou menos | 7 modelos determinísticos + blend, 3 conjuntos (119 membros), mais climatologia | 18/set a 3/out/2026 |
 
 Cada execução grava `snapshots/2026-10-03_run_AAAA-MM-DD.json`. O `--compare`
 imprime a tabela de convergência, que mostra se o sinal está se firmando:
@@ -72,28 +72,53 @@ imprime a tabela de convergência, que mostra se o sinal está se firmando:
 ```
 run          lead  Tmax med  Tmin med  Rain med  P>=1mm
 2026-08-01     63      21.3      12.6       0.7      46
+2026-09-10     23      21.7      13.9       1.0      52
 ```
 
 A climatologia do ERA5 fica em cache na primeira execução, então as seguintes
 levam segundos.
+
+### O que mudou no script em setembro de 2026
+
+A prioridade da análise é **chuva**, depois temperatura, depois vento.
+
+Três coisas entraram na análise:
+
+- **Vento.** `wind_gusts_10m_max` agora é coletado em todos os tiers. Rajada acima
+  de 40 km/h atrapalha véu, penteado e decoração leve, e nenhum aplicativo comum
+  mostra isso. É o terceiro fator, atrás de chuva e temperatura.
+- **GEM (CMC/Canadá)** entrou em `DET_MODELS`, e a **média combinada**
+  (`best_match`) entrou separada, em `BLEND_MODEL`. O blend fica fora do cálculo
+  de dispersão de propósito: ele é a média dos outros, contá-lo como opinião
+  independente encolheria a dispersão artificialmente.
+- **MET Norway (yr.no)** via `api.met.no`, na função `metno()`. Horizonte de ~9
+  dias, então hoje devolve `None` para o dia 3 — o que é a resposta certa, não uma
+  falha.
+
+O cache do ERA5 virou `era5_v2_*.json` porque o v1 não tinha a coluna de vento.
+Um checkout antigo rebaixa o arquivo em vez de ler um cache incompleto.
 
 ### Rotina sugerida
 
 1. Rode o script e anote a linha.
 2. Confira o boletim de El Niño do CPC, atualizado toda segunda quinta-feira.
 3. A partir de **18 de setembro**, passe a olhar o bloco determinístico. Observe
-   a **dispersão entre modelos**, não a média: quando ECMWF, GFS, ICON e UKMO
+   a **dispersão entre modelos**, não a média: quando ECMWF, GFS, ICON e GEM
    convergirem dentro de uns 2 °C e 5 mm, o sinal é real.
-4. A partir de **29 de setembro** a previsão vira acionável. Cruze com os
-   alertas do INMET.
+4. A partir de **24 de setembro** o yr.no passa a alcançar a data.
+5. A partir de **29 de setembro** a previsão vira acionável. Cruze com os
+   alertas do INMET e o radar da Defesa Civil do RS.
 
 ---
 
-## O que os dados dizem hoje (1º de agosto de 2026)
+## O que os dados dizem hoje (10 de setembro de 2026)
 
-**Antecedência de 63 dias.** A previsibilidade determinística da atmosfera acaba
+**Antecedência de 23 dias.** A previsibilidade determinística da atmosfera acaba
 por volta de 10 a 15 dias. Nenhuma fonte no mundo consegue dizer o tempo do dia 3
 de outubro hoje. O que existe é uma distribuição de probabilidade.
+
+Verificado nesta rodada: o alcance dos modelos determinísticos termina em
+**2026-09-25**, oito dias antes do alvo.
 
 ### Climatologia observada, ERA5 1991 a 2025, 3/out ± 5 dias (n = 385)
 
@@ -102,46 +127,47 @@ de outubro hoje. O que existe é uma distribuição de probabilidade.
 | Tmax (°C) | 22,3 | 18,0 | 19,7 | 21,7 | 24,3 | 28,1 | 13,4 | 36,5 |
 | Tmin (°C) | 12,8 | 8,2 | 10,2 | 12,7 | 15,4 | 17,3 | 2,7 | 23,1 |
 | Chuva (mm/dia) | 6,4 | 0,0 | 0,0 | 0,2 | 6,8 | 20,9 | 0,0 | 126,4 |
+| **Rajada (km/h)** | **36,5** | **24,5** | **29,2** | **35,6** | **42,8** | **50,8** | **14,8** | **68,4** |
 
 ```
-P(chuva >=  1 mm) = 42,3%      P(Tmax >= 25 °C) = 23,1%
-P(chuva >=  5 mm) = 27,3%      P(Tmax >= 30 °C) =  4,7%
-P(chuva >= 10 mm) = 20,3%      P(Tmin <= 10 °C) = 23,9%
-P(chuva >= 30 mm) =  5,2%      P(Tmin <=  7 °C) =  4,7%
+P(chuva >=  1 mm) = 42%      P(Tmax >= 25 °C) = 23%
+P(chuva >=  5 mm) = 27%      P(Tmin <= 10 °C) = 24%
+P(chuva >= 10 mm) = 20%      P(rajada >= 40 km/h) = 34%
+P(chuva >= 20 mm) = 10%      P(rajada >= 50 km/h) = 11%
 ```
 
-**Tendência de aquecimento na janela**, que puxa a média de 35 anos para baixo:
+**O vento tem ciclo diário forte** e trabalha a favor do horário escolhido. Média
+horária das rajadas (ERA5 1996–2025, 3/out ± 5 d):
 
-| Período | Tmax | Tmin | Chuva/dia |
-|---|---|---|---|
-| 1991 a 2005 | 21,72 °C | 12,55 °C | 7,59 mm |
-| 2006 a 2015 | 22,47 °C | 12,63 °C | 4,43 mm |
-| 2016 a 2025 | **23,10 °C** | **13,29 °C** | 6,50 mm |
+| Hora | 07h | 10h | **13h** | 15h | **17h30** | 19h | 22h |
+|---|---|---|---|---|---|---|---|
+| Rajada média (km/h) | 21,1 | 29,8 | **31,7** | 30,9 | **~26,9** | 22,4 | 23,7 |
 
-A máxima subiu **1,38 °C** entre o primeiro e o último período, então use a
-última década, não a média completa.
+Pico às 13h, queda de 15% até a cerimônia e de 29% até as 19h. Pôr do sol às
+**18h37**, então luz dourada e vento cedendo coincidem.
 
-### ECMWF SEAS5, 50 membros, rodada de 1º/08/2026
+### ECMWF SEAS5, 50 membros, rodada de 10/09/2026
 
 | Variável | média | p25 | mediana | p75 | mín | máx |
 |---|---|---|---|---|---|---|
-| Tmax (°C) | 21,6 | 18,1 | 21,3 | 25,3 | 13,6 | 29,0 |
-| Tmin (°C) | 13,0 | 10,7 | 12,6 | 15,1 | 6,6 | 19,6 |
-| Chuva (mm) | 5,8 | 0,0 | 0,7 | 4,5 | 0,0 | 61,8 |
+| Tmax (°C) | 22,2 | 19,6 | 21,7 | 24,7 | 14,2 | 32,4 |
+| Tmin (°C) | 13,2 | 10,8 | 13,9 | 16,2 | 5,3 | 25,0 |
+| Chuva (mm) | 8,4 | 0,0 | 1,0 | 7,8 | 0,0 | 68,3 |
 
-`P(chuva ≥1 mm) = 46%` · `P(≥5 mm) = 22%` · `P(≥10 mm) = 16%`
+`P(chuva ≥1 mm) = 52%` · `P(≥5 mm) = 32%` · `P(≥10 mm) = 20%`
 
-O SEAS5 é estatisticamente indistinguível da climatologia (mediana de Tmax 21,3
-contra 21,7; chuva 46% contra 42%). O modelo **não carrega sinal utilizável**
-para esta data, que é o resultado esperado e correto a 63 dias.
+O SEAS5 continua estatisticamente indistinguível da climatologia (mediana de Tmax
+21,7 contra 21,7; chuva 52% contra 42%). O modelo **não carrega sinal utilizável**
+para esta data, que é o resultado esperado e correto a 23 dias.
 
-### El Niño, o único sinal real disponível
+### El Niño, o único sinal real disponível — e ficou mais forte
 
-- **NOAA CPC, boletim de 9 de julho de 2026: alerta de El Niño em vigor.**
-- Anomalia de Niño-3.4 mais recente: **+1,2 °C**.
-- **81% de chance de El Niño muito forte entre outubro e dezembro de 2026.**
-- Julho de 2026 fechou com **276,3 mm em Santa Maria contra 144,9 mm de um julho
-  comum, ou 191% do normal** (calculado do ERA5 neste repositório).
+- **NOAA CPC, boletim de 13 de agosto de 2026: El Niño Advisory em vigor.**
+- Anomalia de Niño-3.4 em julho: **+1,4 °C** (era +1,2 no boletim de julho).
+- **Mais de 90% de chance de El Niño muito forte** na primavera/verão 2026-27,
+  contra os 81% da análise anterior.
+- **69% de chance de ser um evento histórico**, superando em força todos os El
+  Niño registrados desde 1950, no trimestre outubro–dezembro.
 
 **Totais de outubro em Santa Maria (ERA5):** média geral 203,1 mm; média em anos
 de El Niño 240,1 mm, ou 18% a mais. O agregado esconde o essencial: o sinal está
@@ -162,37 +188,43 @@ evento muito forte, os análogos relevantes são 1997, 2002 e 2023.
 ### Conclusão factual para o dia 3
 
 1. **Não existe previsão determinística.** A primeira orientação com skill real
-   chega por volta de **18 de setembro de 2026**.
+   chega em **18 de setembro de 2026**, daqui a 8 dias.
 2. **Melhor estimativa hoje é climatológica, ajustada pela tendência:** máxima
    perto de **23 °C** (faixa provável 19 a 26), mínima perto de **13 °C** (10 a
    16), probabilidade de chuva mensurável de cerca de **45%**.
-3. **O sinal mensal é muito mais forte que o diário.** Outubro de 2026 tende a
-   ser mais chuvoso que os 203 mm normais, por causa do El Niño. Isso não diz
-   nada confiável sobre o dia 3.
+3. **O sinal mensal é muito mais forte que o diário, e subiu.** Outubro de 2026
+   tende a ser bem mais chuvoso que os 203 mm normais. Isso não diz nada
+   confiável sobre o dia 3, mas eleva a chance de o plano B ser necessário em
+   algum momento da semana.
 4. **Cauda pesada.** Em outubros de El Niño forte a cauda de chuva intensa
-   engorda. Os 5,2% climatológicos de `P(≥30 mm/dia)` são um piso, não uma
+   engorda. Os 5% climatológicos de `P(≥30 mm/dia)` são um piso, não uma
    estimativa central.
+5. **O vento é risco real e subestimado.** Um terço dos dias 3 de outubro medidos
+   teve rajada acima de 40 km/h. O horário da cerimônia ajuda, mas penteado, véu
+   e decoração leve devem ser pensados para vento.
 
 ---
 
 ## Fontes
 
-Três fontes produziram todos os números acima e da página:
+Quatro fontes produziram os números desta rodada:
 
 | Fonte | O que veio dela | Endpoint |
 |---|---|---|
-| **ERA5** (Copernicus/ECMWF) | climatologia, grade dos 35 anos, curva horária, totais de outubro, julho de 2026 | `archive-api.open-meteo.com` |
-| **ECMWF SEAS5** | os 50 cenários, e só isso | `seasonal-api.open-meteo.com` |
-| **NOAA CPC** | estado do El Niño e os 81% | `cpc.ncep.noaa.gov` |
+| **ERA5** (Copernicus/ECMWF) | climatologia, grade dos 35 anos, curva horária de temperatura **e de vento**, totais de outubro | `archive-api.open-meteo.com` |
+| **ECMWF SEAS5** | os 50 cenários e os 52% de chuva | `seasonal-api.open-meteo.com` |
+| **NOAA CPC** | estado do El Niño, os +90%, os 69% e a anomalia de +1,4 °C | `cpc.ncep.noaa.gov` |
+| **MetSul / Defesa Civil-RS** | leitura regional de contexto: primavera com chuva e temporais acima da média no RS | `metsul.com` · `defesacivil.rs.gov.br` |
 
-Estas **não** geraram número algum aqui, porque hoje não teriam o que informar
-sobre o dia 3. Passam a ser as principais a partir de 18 de setembro:
+Estas foram consultadas e **não tinham o que informar** sobre o dia 3, porque o
+alvo está além do alcance delas. Passam a valer nas datas indicadas:
 
-| Fonte | Para quê | Endereço |
-|---|---|---|
-| **INMET** | previsão oficial e alertas com valor legal; estação A803 | `previsao.inmet.gov.br/4316907` |
-| **CPTEC/INPE** | modelos brasileiros, para comparar | `tempo.cptec.inpe.br` |
-| **MetSul** | leitura interpretada para o RS | `metsul.com` |
+| Fonte | Para quê | Vale a partir de | Endereço |
+|---|---|---|---|
+| **ECMWF · GFS · ICON · GEM** | os quatro determinísticos, comparados entre si | 18/set | `api.open-meteo.com` |
+| **MET Norway (yr.no)** | blend público, ótimo no curto prazo | 24/set | `api.met.no` |
+| **INMET** | previsão oficial e alertas com valor legal; estação A803 | 1º/out | `previsao.inmet.gov.br/4316907` |
+| **CPTEC/INPE** | modelos brasileiros, para comparar | 1º/out | `tempo.cptec.inpe.br` |
 
 > **Nota sobre a API do INMET.** O endpoint `apitempo.inmet.gov.br/estacao/...`
 > devolveu resposta vazia (HTTP 204) para todas as datas testadas, inclusive

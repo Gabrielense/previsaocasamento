@@ -1,4 +1,7 @@
 <meta charset="utf-8">
+<!-- Sem esta linha o celular renderiza a página com 980px de largura virtual e
+     encolhe tudo para caber, deixando o texto pequeno demais para ler. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Previsão do tempo · 3 de outubro de 2026 · Santa Maria/RS</title>
 
 <style>
@@ -35,6 +38,8 @@
   --rain-none:#DDE3D3;
   --rain-mid:#7C93A8;
   --rain-hi:#3F5464;
+  --wind:#9A8B63;         /* vento: bege dourado, distinto do verde e do azul */
+  --wind-soft:#DCD3BC;
 
   --bg:var(--ground);
   --accent:var(--olive);
@@ -76,6 +81,19 @@ section.band{display:flex; flex-direction:column; gap:24px; padding:62px 0 0}
   font-size:clamp(34px,7vw,56px); line-height:1.14; letter-spacing:-.015em; margin:0; text-wrap:balance}
 .hero .sub{font-size:17px; max-width:52ch}
 
+/* ---- veredito: o bloco que responde antes de explicar ---- */
+.verdict{border:1px solid var(--olive-line); border-radius:5px; overflow:hidden;
+  box-shadow:var(--shadow); background:var(--card)}
+.verdict .vh{background:var(--olive-fill); padding:15px 26px; display:flex; gap:11px;
+  align-items:baseline; flex-wrap:wrap}
+.verdict .vh .tag{font-weight:700; font-size:11px; letter-spacing:.19em;
+  text-transform:uppercase; color:var(--olive-text)}
+.verdict .vh .say{font-family:var(--title); font-weight:600; font-size:clamp(18px,3.5vw,23px);
+  color:var(--fg); line-height:1.25; letter-spacing:-.005em}
+.verdict .vb{padding:24px 26px; display:flex; flex-direction:column; gap:13px}
+.verdict .vb p{font-size:15.5px}
+@media (max-width:520px){ .verdict .vh{padding:14px 18px} .verdict .vb{padding:20px 18px} }
+
 /* ---- faixa verde clara ---- */
 .oliveband{background:var(--olive-pale); border:1px solid var(--olive-line); border-radius:4px;
   padding:32px 26px; display:flex; flex-direction:column; align-items:center; gap:7px; text-align:center}
@@ -93,6 +111,58 @@ section.band{display:flex; flex-direction:column; gap:24px; padding:62px 0 0}
 .card h3{font-family:var(--title); font-weight:600; font-size:21px; color:var(--accent-text);
   margin:0; line-height:1.25; letter-spacing:-.005em}
 
+/* ---- o que mudou ---- */
+.changed{display:grid; grid-template-columns:repeat(2,1fr); gap:13px}
+@media (max-width:600px){ .changed{grid-template-columns:1fr} }
+.chg{background:var(--card); border:1px solid var(--rule); border-radius:4px;
+  padding:19px 21px; display:flex; flex-direction:column; gap:6px; box-shadow:var(--shadow)}
+.chg .k{font-weight:700; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--fg-soft)}
+.chg .move{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap;
+  font-family:var(--title); font-weight:600; font-size:19px; color:var(--accent-text)}
+.chg .move .was{font-family:var(--sans); font-weight:400; font-size:15px;
+  color:var(--fg-soft); text-decoration:line-through; opacity:.72}
+.chg .move .arw{color:var(--olive-line); font-size:15px}
+.chg .r{font-size:14px; line-height:1.5}
+
+/* ---- tabela de fontes ---- */
+.tblwrap{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+table.src-tbl{border-collapse:collapse; width:100%; min-width:560px; font-size:14px}
+table.src-tbl th{background:var(--olive-pale); color:var(--accent-text); font-weight:700;
+  font-size:11px; letter-spacing:.13em; text-transform:uppercase; text-align:left;
+  padding:11px 12px; border-bottom:1px solid var(--olive-line); white-space:nowrap}
+table.src-tbl td{padding:11px 12px; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+table.src-tbl tr:last-child td{border-bottom:0}
+table.src-tbl tr.blend td{background:var(--olive-pale); font-weight:700; color:var(--fg)}
+table.src-tbl .who{font-weight:700; color:var(--fg); white-space:nowrap}
+table.src-tbl .kind{font-size:12px; color:var(--fg-soft); white-space:nowrap}
+table.src-tbl .num{font-variant-numeric:tabular-nums; white-space:nowrap}
+table.src-tbl .say{min-width:150px; font-size:13.5px}
+.tblnote{font-size:12.5px; color:var(--fg-soft); line-height:1.5}
+
+/* No celular a tabela de 5 colunas vira uma lista de fichas: cada linha é um
+   bloco, e cada célula ganha o nome da coluna como rótulo. Some a rolagem
+   horizontal, que é o pior jeito de ler tabela em tela estreita. */
+@media (max-width:640px){
+  .tblwrap{overflow-x:visible}
+  table.src-tbl{min-width:0; display:block}
+  table.src-tbl thead{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+  table.src-tbl tbody,table.src-tbl tr,table.src-tbl td{display:block; width:auto}
+  table.src-tbl tr{border:1px solid var(--rule); border-radius:4px;
+    padding:14px 16px; margin-bottom:10px; background:var(--card)}
+  table.src-tbl tr:last-child{margin-bottom:0}
+  table.src-tbl tr.blend{background:var(--olive-pale); border-color:var(--olive-line)}
+  table.src-tbl td{border:0; padding:0}
+  table.src-tbl td.who{font-family:var(--title); font-size:18px; white-space:normal}
+  table.src-tbl td.kind{margin-bottom:9px}
+  /* as duas células curtas viram um par rótulo/valor lado a lado */
+  table.src-tbl td.num{display:inline-flex; align-items:baseline; gap:6px;
+    margin:0 16px 6px 0; font-size:13.5px}
+  table.src-tbl td.num::before{content:attr(data-l); font-weight:700; font-size:10px;
+    letter-spacing:.13em; text-transform:uppercase; color:var(--fg-soft)}
+  table.src-tbl td.say{margin-top:7px; padding-top:9px;
+    border-top:1px solid var(--rule-soft); font-size:14px}
+}
+
 /* ---- controles ---- */
 .seg{display:inline-flex; border:1px solid var(--rule); border-radius:999px; padding:3px; gap:3px; background:var(--bg)}
 .seg button{font-family:var(--sans); font-size:13.5px; color:var(--fg-soft); background:none;
@@ -105,13 +175,19 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--slate); outline-off
 /* ---- gráficos ---- */
 .plot{width:100%; overflow-x:auto}
 canvas{display:block; width:100%; cursor:crosshair}
-#swarm{height:220px} #evening{height:210px}
+#swarm{height:220px} #evening{height:250px}
 .readout{min-height:62px; border-top:1px solid var(--rule-soft); padding-top:13px;
   display:flex; align-items:center; gap:14px; flex-wrap:wrap}
 .readout .swatch{width:32px; height:32px; border-radius:50%; flex:none; background:var(--rain-none)}
 .readout .txt{font-size:14.5px; line-height:1.45}
 .readout.idle .txt{opacity:.75}
 .hint{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-soft); opacity:.85}
+.only-m{display:none}
+@media (max-width:640px){ .only-d{display:none} .only-m{display:inline} }
+.legend{display:flex; gap:17px; flex-wrap:wrap; font-size:12.5px; color:var(--fg-soft)}
+.legend span{display:flex; align-items:center; gap:7px}
+.legend i{width:14px; height:4px; border-radius:2px; display:block}
+.legend i.blk{height:12px; border-radius:2px}
 
 /* ---- contagens regressivas por etapa ---- */
 ol.cdlist{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px}
@@ -165,6 +241,7 @@ ol.cdlist li.big .cd-num{border-right-color:var(--olive-line)}
   background:var(--card); border:1px solid var(--rule); color:var(--fg-soft)}
 .yr:hover{transform:translateY(-2px)}
 .yr.wet{background:var(--olive-fill); border-color:var(--olive); color:var(--fg); font-weight:700}
+.yr.gusty{box-shadow:inset 0 -4px 0 var(--wind)}
 .yr[aria-pressed="true"]{outline:2px solid var(--slate); outline-offset:2px}
 @media (max-width:520px){ .yr{width:40px; height:40px} }
 .key{display:flex; gap:18px; flex-wrap:wrap; justify-content:center; font-size:12.5px; color:var(--fg-soft)}
@@ -178,12 +255,27 @@ ol.cdlist li.big .cd-num{border-right-color:var(--olive-line)}
 .bar-track{height:9px; background:var(--rain-none); border-radius:9px; overflow:hidden; margin-top:7px}
 .bar-fill{height:100%; border-radius:9px; width:0; background:var(--accent);
   transition:width 1s cubic-bezier(.2,.7,.3,1)}
+.bar-fill.w{background:var(--wind)}
 .bar-pct{font-family:var(--title); font-weight:600; font-size:17px; text-align:right;
   color:var(--accent-text); font-variant-numeric:tabular-nums}
 
 /* ---- notas ---- */
 .note{border-left:3px solid var(--olive-line); padding:3px 0 3px 18px; font-size:15px}
 .note.alt{border-left-color:var(--slate); opacity:.98}
+.note.wind{border-left-color:var(--wind)}
+
+/* ---- lista numerada de recomendações ---- */
+ol.doit{list-style:none; counter-reset:d; margin:0; padding:0;
+  display:flex; flex-direction:column; gap:13px}
+ol.doit li{counter-increment:d; display:grid; grid-template-columns:34px 1fr; gap:16px;
+  align-items:start; background:var(--card); border:1px solid var(--rule);
+  border-radius:4px; padding:19px 22px; box-shadow:var(--shadow)}
+ol.doit li::before{content:counter(d); font-family:var(--title); font-weight:600;
+  font-size:17px; color:var(--accent-text); background:var(--olive-pale);
+  border:1px solid var(--olive-line); border-radius:50%;
+  width:34px; height:34px; display:grid; place-items:center; line-height:1}
+ol.doit li p{font-size:15px}
+@media (max-width:520px){ ol.doit li{padding:17px 16px; gap:13px} }
 
 /* ---- fontes ---- */
 .srcgroup{display:flex; flex-direction:column}
@@ -202,6 +294,63 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
   align-items:center; text-align:center}
 
 @media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important} }
+
+/* ---------------------------------------------------------------------------
+   Ajustes de celular. Agora que existe a meta viewport, estas regras valem de
+   verdade: antes o telefone renderizava a 980px e encolhia a página inteira.
+   --------------------------------------------------------------------------- */
+@media (max-width:640px){
+  body{font-size:16.5px; line-height:1.6}
+  .hero{padding:44px 0 0}
+  .hero .sub{font-size:16px}
+  section.band{padding:44px 0 0; gap:20px}
+
+  /* títulos de seção respiram menos e não estouram a linha */
+  .head h2{font-size:clamp(25px,7.4vw,32px); line-height:1.18}
+  .head .lbl{font-size:10.5px; letter-spacing:.15em}
+
+  /* o veredito é a primeira coisa que ela lê no telefone */
+  .verdict .vh{flex-direction:column; gap:5px; padding:15px 17px}
+  .verdict .vh .say{font-size:19px}
+  .verdict .vb{gap:12px}
+  .verdict .vb p{font-size:15px}
+
+  /* alvo de toque maior nos botões do gráfico */
+  .seg{width:100%}
+  .seg button{flex:1; padding:11px 12px; font-size:14px}
+
+  /* o par "antes → depois" quebra sem ficar torto */
+  .chg{padding:17px 18px}
+  .chg .move{font-size:18px; row-gap:2px}
+
+  /* legenda e leitura dos gráficos */
+  .legend{gap:12px; font-size:12px}
+  .readout{min-height:0; gap:11px}
+  .readout .txt{font-size:14px}
+  .plot{overflow-x:hidden}
+
+  /* recomendações numeradas: número menor, mais espaço para o texto */
+  ol.doit li{grid-template-columns:30px 1fr; gap:13px; padding:17px 16px}
+  ol.doit li::before{width:30px; height:30px; font-size:15px}
+  ol.doit li p{font-size:14.5px}
+
+  /* fontes: a URL longa não pode empurrar a largura da página */
+  .src{padding:17px 0}
+  .src-url{font-size:11px; overflow-wrap:anywhere}
+  ul.used{padding-left:17px}
+
+  .oliveband{padding:26px 19px}
+  .note{padding-left:15px; font-size:14.5px}
+  footer{font-size:12.5px}
+}
+
+/* telas bem estreitas, tipo iPhone SE */
+@media (max-width:360px){
+  .wrap{padding:0 14px 56px}
+  .head h2{font-size:23px}
+  .verdict .vh .say{font-size:17.5px}
+  .yr{width:35px; height:35px}
+}
 </style>
 
 <div class="wrap">
@@ -215,39 +364,188 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     </svg>
     <p class="kicker">Santa Maria · Rio Grande do Sul · cerimônia às 17h30</p>
     <h1>O tempo no dia 3 de outubro de 2026</h1>
-    <p class="sub">O que a meteorologia já consegue dizer sobre esse sábado, o que ainda não consegue, e a partir de quando vale a pena olhar a previsão.</p>
+    <p class="sub">A pergunta é uma só: vai chover? Análise refeita em 10 de setembro, agora com sete fontes em vez de três.</p>
   </header>
 
   <section class="band">
-    <div class="head"><span class="lbl">A resposta curta</span><h2>Ainda não dá para saber</h2><span class="rule"></span></div>
-    <div class="card">
-      <p>Nenhum serviço de meteorologia do mundo consegue acertar o tempo de um dia específico com dois meses de antecedência. As previsões só passam a ter valor de verdade a partir de <strong>15 dias antes</strong>.</p>
-      <p>Se algum site ou aplicativo mostrar hoje um solzinho ou uma nuvem para o dia 3 de outubro, ele está apenas repetindo a média histórica da época. Isso não tem valor de previsão.</p>
-      <p>O que dá para fazer agora é entender <strong>como costuma ser essa data</strong> e <strong>quando a previsão vai começar a valer</strong>. É disso que trata o resto da página.</p>
+    <div class="verdict">
+      <div class="vh">
+        <span class="tag">Veredito</span>
+        <span class="say">A chance de chuva é de 42%, e ninguém consegue dizer mais que isso ainda. Faltam 8 dias para a previsão começar a valer.</span>
+      </div>
+      <div class="vb">
+        <p>Faltam <strong>23 dias</strong>. Isso é mais que o dobro do alcance de qualquer modelo do mundo, então <strong>ninguém sabe</strong> se vai chover no dia 3 — e quem disser que sabe está mostrando média histórica com cara de previsão.</p>
+        <p>O número honesto de hoje vem dos 35 anos de medições: <strong>42% de chance de cair alguma chuva</strong> nesta data, e <strong>20% de chance de ser chuva forte</strong>, acima de 10 mm. Ou seja: o mais provável é não chover, mas não é uma aposta confortável o bastante para dispensar cobertura.</p>
+        <p>O que mudou desde agosto e mexe com esse número: o <strong>El Niño ficou bem mais forte</strong>. A NOAA agora dá mais de 90% de chance de ser um evento muito forte, e 69% de chance de ser o mais forte já registrado desde 1950. Isso não diz nada sobre o dia 3 especificamente, mas deixa o <em>mês</em> de outubro bem mais chuvoso que o normal — e portanto aumenta a chance de o plano B ser necessário em algum momento da semana.</p>
+        <p>A data continua sendo uma boa escolha, e o horário também. <strong>A próxima leitura que vale alguma coisa é em 18 de setembro</strong> — antes disso, olhar aplicativo só gera ansiedade.</p>
+      </div>
     </div>
   </section>
 
   <section class="band">
-    <div class="head"><span class="lbl">O que os modelos dizem hoje</span><h2>50 futuros possíveis</h2><span class="rule"></span></div>
-    <p style="text-align:center; margin:0 auto">O principal modelo climático do mundo, do Centro Europeu, não roda uma vez só. Ele roda 50 vezes, mudando um pouquinho o ponto de partida em cada uma, e devolve 50 resultados diferentes. Cada bolinha abaixo representa <strong>um casamento possível</strong>.</p>
+    <div class="head"><span class="lbl">A pergunta principal</span><h2>Vai chover no dia 3?</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">Tudo que existe hoje sobre isso são 35 anos de medições do que realmente aconteceu em Santa Maria nesta mesma época, entre 28 de setembro e 8 de outubro. São 385 dias medidos, e eles dizem o seguinte:</p>
+
+    <div class="grid3">
+      <div class="stat"><span class="k">Chance de chover</span><span class="v">42%</span><span class="r">De cair qualquer chuva mensurável no dia.</span></div>
+      <div class="stat"><span class="k">Chance de chuva forte</span><span class="v">20%</span><span class="r">Acima de 10 mm, o que já encharca um gramado.</span></div>
+      <div class="stat"><span class="k">Chance de temporal</span><span class="v">5%</span><span class="r">Acima de 30 mm. Raro, mas é o cenário que exige plano B.</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Se chover, quanto costuma chover</h3>
+      <p style="font-size:15px">Chuva quase nunca fica no meio termo: ou não vem, ou vem com força. Por isso vale olhar a escada inteira, e não só o “42%”.</p>
+      <div class="bars" id="bars">
+        <div class="bar-row"><div><div class="bar-label">Qualquer chuvinha, acima de 1 mm</div><div class="bar-track"><div class="bar-fill" data-w="42"></div></div></div><div class="bar-pct">42%</div></div>
+        <div class="bar-row"><div><div class="bar-label">Chuva moderada, acima de 5 mm</div><div class="bar-track"><div class="bar-fill" data-w="27"></div></div></div><div class="bar-pct">27%</div></div>
+        <div class="bar-row"><div><div class="bar-label">Chuva forte, acima de 10 mm</div><div class="bar-track"><div class="bar-fill" data-w="20"></div></div></div><div class="bar-pct">20%</div></div>
+        <div class="bar-row"><div><div class="bar-label">Temporal, acima de 30 mm</div><div class="bar-track"><div class="bar-fill" data-w="5"></div></div></div><div class="bar-pct">5%</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Os últimos 35 dias 3 de outubro</h3>
+      <p style="font-size:15px">Cada quadradinho é um ano. Os verdes são os anos em que <strong>choveu</strong> no dia 3, os brancos são os anos em que não choveu: foram <strong>14 em 35</strong>. A tarja dourada embaixo marca os 10 anos em que também ventou forte. Clique em qualquer um para ver como aquele dia foi de verdade.</p>
+      <div class="years" id="years"></div>
+      <div class="key">
+        <span><i style="background:var(--olive-fill); border-color:var(--olive)"></i> choveu</span>
+        <span><i style="background:var(--card)"></i> não choveu</span>
+        <span><i style="background:var(--wind); border-color:var(--wind)"></i> rajada acima de 40 km/h</span>
+      </div>
+      <div class="readout idle" id="yearOut"><span class="txt" id="yearTxt">Nenhum ano selecionado ainda.</span></div>
+    </div>
+
+    <p class="note">Repare que os anos mais chuvosos não estão espalhados por acaso: <strong>2002 teve 42 mm</strong> e <strong>2000 teve 34 mm</strong>, os dois maiores da série. Ambos foram anos de El Niño — que é exatamente o que está acontecendo de novo agora, e com mais força. É por isso que a seção do El Niño, mais abaixo, importa mais nesta análise do que importava na anterior.</p>
+    <p class="note alt">E a ressalva que vale para tudo nesta página: <strong>42% é a média histórica, não uma previsão do dia 3</strong>. O número real para o dia 3 só existe a partir de 18 de setembro, e vai ser bem diferente de 42% — para cima ou para baixo, conforme o que os modelos enxergarem.</p>
+  </section>
+
+  <section class="band">
+    <div class="head"><span class="lbl">Desde 1º de agosto</span><h2>O que mudou de lá para cá</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">A análise anterior foi feita com 63 dias de antecedência. Esta foi feita com 23. Comparando as duas rodadas do mesmo modelo, o que se moveu foi isto:</p>
+
+    <div class="changed">
+      <div class="chg">
+        <span class="k">Chance de chuva no dia 3</span>
+        <span class="move"><span class="was">46%</span><span class="arw">→</span>52%</span>
+        <span class="r">Subiu 6 pontos entre as duas rodadas do modelo sazonal. É um movimento pequeno, dentro do ruído — mas foi para cima, não para baixo.</span>
+      </div>
+      <div class="chg">
+        <span class="k">El Niño muito forte</span>
+        <span class="move"><span class="was">81%</span><span class="arw">→</span>mais de 90%</span>
+        <span class="r">A NOAA subiu a aposta. E acrescentou uma estimativa nova: <strong>69%</strong> de chance de ser o El Niño mais forte já medido desde 1950.</span>
+      </div>
+      <div class="chg">
+        <span class="k">Vento</span>
+        <span class="move">entrou na conta</span>
+        <span class="r">Não era medido antes. Agora tem 35 anos de rajadas na análise, e uma seção só dele mais abaixo.</span>
+      </div>
+      <div class="chg">
+        <span class="k">Fontes consultadas</span>
+        <span class="move"><span class="was">3</span><span class="arw">→</span>7</span>
+        <span class="r">Entraram GEM (Canadá), a média combinada, o yr.no da Noruega e a leitura regional da MetSul e da Defesa Civil do RS.</span>
+      </div>
+    </div>
+
+    <p class="note">Uma coisa <strong>não</strong> mudou, e é a mais importante: a temperatura. As duas rodadas deram praticamente a mesma coisa, mediana de <strong>21,3 °C</strong> em agosto e <strong>21,7 °C</strong> agora. Quando duas rodadas separadas por 40 dias dizem o mesmo, isso é sinal de que a climatologia está mandando — ou seja, é um começo de outubro comum.</p>
+  </section>
+
+  <section class="band">
+    <div class="head"><span class="lbl">As sete fontes</span><h2>O que cada uma diz, e o que ainda não pode dizer</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">Esta é a tabela honesta. Repare que quase toda a coluna de números está vazia: a 23 dias, a maioria das fontes simplesmente <strong>não alcança</strong> o dia 3. Mostrar isso é mais útil do que inventar um número.</p>
+
+    <div class="card">
+      <div class="tblwrap">
+        <table class="src-tbl">
+          <thead>
+            <tr><th>Fonte</th><th>Tipo</th><th>Alcance</th><th>Diz algo hoje?</th><th>Leitura</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="who">ECMWF</td><td class="kind">Global · Europa</td>
+              <td class="num" data-l="Alcance">16 dias</td><td class="num" data-l="Diz algo hoje?">não</td>
+              <td class="say">Chega só até 25/set. Passa a valer em <strong>18/set</strong>.</td>
+            </tr>
+            <tr>
+              <td class="who">GFS</td><td class="kind">Global · NOAA/EUA</td>
+              <td class="num" data-l="Alcance">16 dias</td><td class="num" data-l="Diz algo hoje?">não</td>
+              <td class="say">Mesma coisa. É o mais volúvel dos quatro, costuma exagerar chuva.</td>
+            </tr>
+            <tr>
+              <td class="who">ICON</td><td class="kind">Global · DWD/Alemanha</td>
+              <td class="num" data-l="Alcance">16 dias</td><td class="num" data-l="Diz algo hoje?">não</td>
+              <td class="say">Idem. Bom desempenho no Sul do Brasil.</td>
+            </tr>
+            <tr>
+              <td class="who">GEM</td><td class="kind">Global · Canadá</td>
+              <td class="num" data-l="Alcance">16 dias</td><td class="num" data-l="Diz algo hoje?">não</td>
+              <td class="say">Idem. Entrou nesta análise agora, por ser independente dos outros três.</td>
+            </tr>
+            <tr>
+              <td class="who">MET Norway</td><td class="kind">Blend · yr.no</td>
+              <td class="num" data-l="Alcance">9 dias</td><td class="num" data-l="Diz algo hoje?">não</td>
+              <td class="say">O de alcance mais curto. Só serve na última semana — e aí é ótimo.</td>
+            </tr>
+            <tr>
+              <td class="who">MetSul<br><span class="kind">e Defesa Civil-RS</span></td><td class="kind">Humana · RS</td>
+              <td class="num" data-l="Alcance">7 a 10 dias</td><td class="num" data-l="Diz algo hoje?">parcial</td>
+              <td class="say">Sobre o dia 3, nada. Sobre outubro, sim: <strong>mês chuvoso, risco de temporal acima do normal</strong>.</td>
+            </tr>
+            <tr>
+              <td class="who">ECMWF SEAS5</td><td class="kind">Sazonal · 50 cenários</td>
+              <td class="num" data-l="Alcance">6 meses</td><td class="num" data-l="Diz algo hoje?"><strong>sim</strong></td>
+              <td class="say">Máx. <strong>21,7 °C</strong> · chuva <strong>52%</strong> · mas ver a ressalva abaixo.</td>
+            </tr>
+            <tr class="blend">
+              <td class="who">Climatologia</td><td class="kind">ERA5 · 35 anos</td>
+              <td class="num" data-l="Alcance">sempre</td><td class="num" data-l="Diz algo hoje?"><strong>sim</strong></td>
+              <td class="say">Máx. <strong>21,7 °C</strong> · chuva <strong>42%</strong> · rajada <strong>36 km/h</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tblnote">Alcance = até onde o modelo publica previsão. Valores de 10/09/2026. A linha da climatologia não é previsão: é o que <em>de fato</em> aconteceu nos 35 primeiros dias 3 de outubro medidos, e serve de régua para julgar as outras.</p>
+    </div>
+
+    <p class="note alt"><strong>A ressalva do SEAS5.</strong> Ele é a única fonte que alcança o dia 3, então dá vontade de acreditar nele. Só que os números dele (21,7 °C e 52%) são <em>estatisticamente indistinguíveis</em> da climatologia (21,7 °C e 42%). Traduzindo: o modelo não está vendo nada que os 35 anos de histórico já não digam. Ele não sabe de nada — ele só está repetindo a média com mais passos.</p>
+  </section>
+
+  <section class="band">
+    <div class="head"><span class="lbl">O método</span><h2>Por que olhar sete fontes e não uma</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">Isso não é preciosismo. Combinar modelos tem nome — <strong>ensemble multi-modelo</strong> — e é o que os serviços meteorológicos de verdade fazem. Três motivos:</p>
+
+    <div class="stack m">
+      <p class="note"><strong>Não existe o melhor modelo.</strong> Qual acerta mais muda conforme a região, a variável e o dia. Apostar em um aplicativo só é frágil, mesmo que seja um bom aplicativo.</p>
+      <p class="note alt"><strong>Os erros se cancelam.</strong> Modelos independentes erram para lados diferentes. Somando, parte do erro se anula e sobra o sinal que todos enxergam.</p>
+      <p class="note"><strong>A discordância é informação.</strong> Quando as fontes convergem, dá para confiar. Quando divergem, essa divergência é a medida honesta do quanto ninguém sabe. Vale principalmente para a chuva, que é a variável em que os modelos mais discordam entre si.</p>
+    </div>
+
+    <div class="oliveband">
+      <span class="t">Em uma frase</span>
+      <p>Comparar fontes não deixa a previsão perfeita. Deixa a <strong>incerteza visível</strong> — e é isso que permite decidir com calma, em vez de decidir com susto.</p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="head"><span class="lbl">O que o único modelo disponível diz</span><h2>50 futuros possíveis</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">O modelo sazonal do Centro Europeu não roda uma vez só. Ele roda 50 vezes, mudando um pouquinho o ponto de partida em cada uma, e devolve 50 resultados. Cada bolinha é <strong>um casamento possível</strong>, e o gráfico abre na chuva de cada um deles. Estes são os 50 cenários da rodada de <strong>10 de setembro</strong>.</p>
 
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap">
         <div class="seg" role="group" aria-label="Escolher o que mostrar">
-          <button type="button" id="btT" aria-pressed="true">Temperatura</button>
-          <button type="button" id="btR" aria-pressed="false">Chuva</button>
+          <button type="button" id="btR" aria-pressed="true">Chuva</button>
+          <button type="button" id="btT" aria-pressed="false">Temperatura</button>
         </div>
-        <span class="hint">passe o mouse nas bolinhas</span>
+        <span class="hint"><span class="only-d">passe o mouse nas bolinhas</span><span class="only-m">toque nas bolinhas</span></span>
       </div>
-      <div class="plot"><canvas id="swarm" role="img" aria-label="Cinquenta bolinhas, uma para cada cenário do modelo. No modo temperatura elas se espalham de 13,6 a 29 graus. No modo chuva, a maioria fica no zero e algumas chegam a 62 milímetros."></canvas></div>
+      <div class="plot"><canvas id="swarm" role="img" aria-label="Cinquenta bolinhas, uma para cada cenário do modelo. No modo temperatura elas se espalham de 14,2 a 32,4 graus. No modo chuva, a maioria fica no zero e algumas chegam a 68 milímetros."></canvas></div>
       <div class="readout idle" id="swarmOut">
         <span class="swatch" id="swarmSw"></span>
         <span class="txt" id="swarmTxt">Toque ou passe o mouse em uma bolinha para ver como seria o casamento naquele cenário.</span>
       </div>
     </div>
 
-    <p class="note">No modo temperatura, os cenários vão de <strong>13,6 °C</strong> a <strong>29,0 °C</strong>. São mais de 15 graus entre o mais frio e o mais quente, ou seja, a distância entre um dia de casaco e um dia de manga curta. Essa bagunça toda <em>é</em> a resposta honesta do modelo: ele ainda não sabe.</p>
-    <p class="note alt">No modo chuva, repare que a maioria das bolinhas fica grudada no zero e só umas poucas disparam. Isso é típico: chuva ou acontece ou não acontece, raramente fica no meio termo.</p>
+    <p class="note">Repare que <strong>metade das bolinhas fica quase no zero</strong> e umas poucas disparam para 40, 60, 68 mm. Isso é típico de chuva: ou acontece ou não acontece, raramente fica no meio termo. É por isso que a média de chuva de um modelo é um número quase inútil — e por isso que esta página fala em <em>probabilidade</em>, nunca em milímetros previstos.</p>
+    <p class="note alt">Trocando para temperatura, os cenários vão de <strong>14,2 °C</strong> a <strong>32,4 °C</strong> — 18 graus entre o mais frio e o mais quente. Mesmo assim a temperatura preocupa menos: qualquer ponto dessa faixa dá uma festa boa, o que não é verdade para a chuva.</p>
   </section>
 
   <section class="band">
@@ -260,7 +558,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
         <div class="cd-body">
           <span class="cd-date">18 de setembro</span>
           <h4>Primeiro sinal de verdade</h4>
-          <p>O dia 3 entra no alcance de 15 dias dos modelos. Aparece a primeira previsão que merece esse nome. Ainda vai mudar bastante, mas já mostra a tendência: frente fria chegando ou tempo firme.</p>
+          <p>O dia 3 entra no alcance de 16 dias do ECMWF, do GFS, do ICON e do GEM. Aparece a primeira previsão que merece esse nome. Ainda vai mudar bastante, mas já mostra a tendência: frente fria chegando ou tempo firme. Olhe a <strong>discordância entre os quatro</strong>, não a média.</p>
         </div>
       </li>
       <li data-date="2026-09-26" data-ate="2026-09-30">
@@ -268,7 +566,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
         <div class="cd-body">
           <span class="cd-date">26 de setembro</span>
           <h4>Confiança boa, hora de decidir</h4>
-          <p>Faltando uma semana, os vários modelos do mundo já costumam concordar entre si. Este é o momento certo de bater o martelo sobre tenda, cobertura e plano B.</p>
+          <p>Faltando uma semana, os modelos já costumam concordar entre si, e o yr.no entra no ar. Este é o momento certo de bater o martelo sobre tenda, cobertura e plano B. Se os quatro modelos ficarem dentro de uns 2 °C e 5 mm, o sinal é real.</p>
         </div>
       </li>
       <li data-date="2026-10-01" data-ate="2026-10-02">
@@ -276,7 +574,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
         <div class="cd-body">
           <span class="cd-date">1 e 2 de outubro</span>
           <h4>Previsão final</h4>
-          <p>Com dois ou três dias de antecedência, a previsão de chuva e temperatura fica confiável até para ajustar horários. Vale conferir também os alertas oficiais do INMET.</p>
+          <p>Com dois ou três dias, a previsão fica confiável até para ajustar horários — e o vento, que é o que mais demora a se definir, finalmente se define. Confira os alertas do INMET e o radar da Defesa Civil do RS.</p>
         </div>
       </li>
       <li class="big" data-date="2026-10-03" data-ate="2026-10-03">
@@ -284,87 +582,101 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
         <div class="cd-body">
           <span class="cd-date">3 de outubro</span>
           <h4>O grande dia</h4>
-          <p>Cerimônia às 17h30. A essa altura não sobra previsão para fazer, só olhar pela janela e aproveitar.</p>
+          <p>Cerimônia às 17h30, pôr do sol às 18h37. A essa altura não sobra previsão para fazer, só olhar pela janela e aproveitar.</p>
         </div>
       </li>
     </ol>
   </section>
 
   <section class="band">
-    <div class="head"><span class="lbl">O que já sabemos</span><h2>Como costuma ser o começo de outubro</h2><span class="rule"></span></div>
-    <p style="text-align:center; margin:0 auto">Os números abaixo saem de 35 anos de medições do que realmente aconteceu em Santa Maria nesta mesma época do ano, entre 28 de setembro e 8 de outubro.</p>
+    <div class="head"><span class="lbl">Secundário</span><h2>A temperatura, que é a parte fácil</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">Esta é a variável mais bem comportada das três, e a que menos deve preocupar. O começo de outubro em Santa Maria é ameno e previsível: as duas rodadas do modelo, separadas por 40 dias, deram praticamente o mesmo número.</p>
 
     <div class="grid3">
       <div class="stat"><span class="k">Máxima típica</span><span class="v">23 °C</span><span class="r">Em geral entre 20 e 24 °C, na média da última década.</span></div>
       <div class="stat"><span class="k">Mínima típica</span><span class="v">13 °C</span><span class="r">A noite esfria. Casaco leve resolve.</span></div>
-      <div class="stat"><span class="k">Chance de chuva</span><span class="v">42%</span><span class="r">Probabilidade de cair alguma chuva no dia.</span></div>
+      <div class="stat"><span class="k">Na cerimônia</span><span class="v">21 °C</span><span class="r">Média das 17h30, caindo para 17 °C às 21h.</span></div>
     </div>
 
-    <div class="card">
-      <h3>Os últimos 35 dias 3 de outubro</h3>
-      <p style="font-size:15px">Cada quadradinho é um ano. Os verdes são os anos em que choveu no dia 3, os brancos são os anos em que não choveu. Foram <strong>14 anos com chuva em 35</strong>. Clique em qualquer um para ver como aquele dia foi de verdade.</p>
-      <div class="years" id="years"></div>
-      <div class="key">
-        <span><i style="background:var(--olive-fill); border-color:var(--olive)"></i> choveu</span>
-        <span><i style="background:var(--card)"></i> não choveu</span>
-      </div>
-      <div class="readout idle" id="yearOut"><span class="txt" id="yearTxt">Nenhum ano selecionado ainda.</span></div>
-    </div>
-
-    <div class="card">
-      <h3>Se chover, quanto costuma chover</h3>
-      <div class="bars" id="bars">
-        <div class="bar-row"><div><div class="bar-label">Qualquer chuvinha, acima de 1 mm</div><div class="bar-track"><div class="bar-fill" data-w="42"></div></div></div><div class="bar-pct">42%</div></div>
-        <div class="bar-row"><div><div class="bar-label">Chuva moderada, acima de 5 mm</div><div class="bar-track"><div class="bar-fill" data-w="27"></div></div></div><div class="bar-pct">27%</div></div>
-        <div class="bar-row"><div><div class="bar-label">Chuva forte, acima de 10 mm</div><div class="bar-track"><div class="bar-fill" data-w="20"></div></div></div><div class="bar-pct">20%</div></div>
-        <div class="bar-row"><div><div class="bar-label">Temporal, acima de 30 mm</div><div class="bar-track"><div class="bar-fill" data-w="5"></div></div></div><div class="bar-pct">5%</div></div>
-      </div>
-    </div>
+    <p class="note">A faixa provável é de <strong>19 a 26 °C</strong> de máxima. Extremos existem — os 35 anos vão de 13,4 a 36,5 °C — mas são raros, e nenhum deles estragaria a festa por si só. Se sobrar preocupação para gastar, gaste com a chuva.</p>
   </section>
 
   <section class="band">
-    <div class="head"><span class="lbl">A noite da festa</span><h2>Como a temperatura cai depois das 17h30</h2><span class="rule"></span></div>
-    <p style="text-align:center; margin:0 auto">Esta é a curva média de um dia dessa época, hora a hora, com base em 30 anos de medição. A faixa mais clara mostra a variação comum entre um ano e outro. Arraste o dedo ou o mouse sobre o gráfico.</p>
+    <div class="head"><span class="lbl">O terceiro fator</span><h2>O vento, que quase ninguém lembra de olhar</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">Vento não cancela casamento, mas atrapalha véu, cabelo e decoração leve — e costuma pegar todo mundo de surpresa porque nenhum aplicativo mostra. Entrou nesta análise pela primeira vez.</p>
+
+    <div class="grid3">
+      <div class="stat"><span class="k">Rajada típica</span><span class="v">36 km/h</span><span class="r">Mediana dos 35 anos. É vento de balançar cabelo, não de derrubar nada.</span></div>
+      <div class="stat"><span class="k">Chance de passar de 40</span><span class="v">34%</span><span class="r">A partir daí atrapalha véu e penteado.</span></div>
+      <div class="stat"><span class="k">Chance de passar de 50</span><span class="v">11%</span><span class="r">Aí atrapalha estrutura leve, arco e toalha de mesa.</span></div>
+    </div>
 
     <div class="card">
-      <div class="plot"><canvas id="evening" role="img" aria-label="Curva de temperatura média nas 24 horas. Máxima por volta das 15h com 22 graus, 21 graus no horário da cerimônia às 17h30, caindo para 17 graus às 21h e 15,5 graus à meia-noite."></canvas></div>
-      <div class="readout idle" id="evOut"><span class="txt" id="evTxt">Passe o mouse no gráfico para ver a temperatura de cada horário.</span></div>
+      <h3>A boa notícia está no horário</h3>
+      <div class="bars">
+        <div class="bar-row"><div><div class="bar-label">Rajada média às <b>13h</b>, o pico do dia</div><div class="bar-track"><div class="bar-fill w" data-w="53"></div></div></div><div class="bar-pct">32</div></div>
+        <div class="bar-row"><div><div class="bar-label">Rajada média às <b>17h30</b>, na cerimônia</div><div class="bar-track"><div class="bar-fill w" data-w="45"></div></div></div><div class="bar-pct">27</div></div>
+        <div class="bar-row"><div><div class="bar-label">Rajada média às <b>19h</b>, já na festa</div><div class="bar-track"><div class="bar-fill w" data-w="37"></div></div></div><div class="bar-pct">22</div></div>
+      </div>
+      <p style="font-size:15px">O vento nesta época segue o sol: nasce fraco, sobe com o calor, <strong>bate o pico entre 13h e 15h</strong> e desmancha ao entardecer. Às 17h30 ele já caiu uns 15% em relação ao pico, e às 19h, quando a festa começa, já caiu quase um terço.</p>
+    </div>
+
+    <p class="note wind"><strong>O horário de vocês está bem escolhido.</strong> Cerimônia às 17h30, pôr do sol às 18h37. A luz dourada e o vento cedendo acontecem na mesma hora — é a melhor janela do dia.</p>
+  </section>
+
+  <section class="band">
+    <div class="head"><span class="lbl">A noite da festa</span><h2>Temperatura e vento, hora a hora</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">A linha é a temperatura média desta época, hora a hora, com a faixa clara mostrando a variação comum entre um ano e outro. As barras douradas são a rajada de vento média. Arraste o dedo ou o mouse sobre o gráfico.</p>
+
+    <div class="card">
+      <div class="plot"><canvas id="evening" role="img" aria-label="Gráfico combinado de 24 horas. A temperatura sobe até 22 graus às 15h, marca 21 graus na cerimônia às 17h30 e cai para 17 graus às 21h. As barras de vento sobem até 32 quilômetros por hora às 13h e caem para 22 às 19h."></canvas></div>
+      <div class="legend">
+        <span><i style="background:var(--olive)"></i> temperatura média</span>
+        <span><i class="blk" style="background:var(--wind-soft)"></i> rajada média</span>
+        <span><i style="background:var(--slate)"></i> cerimônia, 17h30</span>
+      </div>
+      <div class="readout idle" id="evOut"><span class="txt" id="evTxt">Passe o mouse no gráfico para ver a temperatura e o vento de cada horário.</span></div>
     </div>
 
     <p class="note">No horário da cerimônia, às 17h30, a média fica em torno de <strong>21 °C</strong>. Às 21h já caiu para <strong>17 °C</strong>, e à meia-noite chega perto de <strong>15,5 °C</strong>. Vale avisar os convidados que a noite pede um casaco leve.</p>
   </section>
 
   <section class="band">
-    <div class="head"><span class="lbl">O único sinal real de hoje</span><h2>O El Niño está ativo</h2><span class="rule"></span></div>
-    <p style="text-align:center; margin:0 auto">El Niño é um aquecimento do Oceano Pacífico que mexe com o clima do Rio Grande do Sul. Em anos de El Niño forte, a primavera aqui costuma ser <strong>mais chuvosa que o normal</strong>. Este é o único fator sobre outubro de 2026 que já dá para afirmar com base científica.</p>
+    <div class="head"><span class="lbl">O sinal que ficou mais forte</span><h2>O El Niño saiu de forte para histórico</h2><span class="rule"></span></div>
+    <p style="text-align:center; margin:0 auto">El Niño é um aquecimento do Oceano Pacífico que mexe com o clima do Rio Grande do Sul. Em anos de El Niño forte, a primavera aqui costuma ser <strong>mais chuvosa que o normal</strong>. Desde agosto, esse sinal ficou consideravelmente mais forte.</p>
 
     <div class="grid3">
-      <div class="stat"><span class="k">Situação atual</span><span class="v" style="font-size:27px">Ativo</span><span class="r">Alerta oficial em vigor desde julho de 2026.</span></div>
-      <div class="stat"><span class="k">Chance de ser forte</span><span class="v">81%</span><span class="r">Probabilidade de El Niño muito forte entre outubro e dezembro.</span></div>
-      <div class="stat"><span class="k">Julho já veio assim</span><span class="v">191%</span><span class="r">Choveu 276 mm em julho de 2026, contra 145 mm de um julho comum.</span></div>
+      <div class="stat"><span class="k">Chance de ser muito forte</span><span class="v">+90%</span><span class="r">Era 81% em julho. A NOAA subiu em agosto.</span></div>
+      <div class="stat"><span class="k">Chance de ser recorde</span><span class="v">69%</span><span class="r">De superar todos os El Niño medidos desde 1950, entre outubro e dezembro.</span></div>
+      <div class="stat"><span class="k">Anomalia no Pacífico</span><span class="v">+1,4</span><span class="r">Graus acima do normal em julho, contra +1,2 na medição anterior.</span></div>
     </div>
 
     <div class="oliveband">
       <span class="t">Onde mora a confusão</span>
-      <p>O El Niño deixa o <strong>mês inteiro</strong> de outubro mais chuvoso. Isso não quer dizer que vai chover no dia 3. Um mês chuvoso tem muitos dias de sol, só que com mais chuva espalhada ao longo dele. Nenhuma informação sobre El Niño permite prever um dia específico.</p>
+      <p>O El Niño deixa o <strong>mês inteiro</strong> de outubro mais chuvoso. Isso não quer dizer que vai chover no dia 3. Um mês chuvoso tem muitos dias de sol, só que com mais chuva espalhada ao longo dele. Nenhuma informação sobre El Niño permite prever um dia específico — nem este, que está batendo recorde.</p>
     </div>
 
-    <p style="font-size:15px">Para dar noção do tamanho do efeito: nos outubros de El Niño forte, Santa Maria acumulou 552 mm em 1997, 422 mm em 2002 e 346 mm em 2023, contra os 203 mm de um outubro comum.</p>
+    <p style="font-size:15px">Para dar noção do tamanho do efeito: nos outubros de El Niño forte, Santa Maria acumulou 552 mm em 1997, 422 mm em 2002 e 346 mm em 2023, contra os 203 mm de um outubro comum. A MetSul e a Defesa Civil do RS já vêm avisando que a primavera de 2026 tende a ter <strong>mais temporais que o normal</strong> no estado.</p>
+
+    <p class="note alt">O que isso muda na prática: nada sobre o dia 3, e bastante sobre o <strong>plano B</strong>. Num outubro de El Niño histórico, a chance de o plano B ser usado em <em>algum</em> momento da semana do casamento é bem maior que o normal. Vale contratá-lo com folga.</p>
   </section>
 
   <section class="band">
     <div class="head"><span class="lbl">Na prática</span><h2>O que fazer com tudo isso agora</h2><span class="rule"></span></div>
-    <div class="stack m">
-      <p class="note"><strong>Deixe o plano B já contratado.</strong> Reserve a cobertura com opção de cancelar até o fim de setembro. Com 42% de chance de chuva, é bem provável que ela faça falta.</p>
-      <p class="note alt"><strong>Avise sobre o casaco leve.</strong> A temperatura cai uns 6 graus entre a cerimônia e o fim da festa.</p>
-      <p class="note"><strong>Não olhe previsão antes de 18 de setembro.</strong> Antes disso, olhar aplicativo só gera ansiedade sem nenhuma informação nova. Depois dessa data, vale acompanhar toda semana.</p>
-      <p class="note alt"><strong>A data escolhida é boa.</strong> O começo de outubro em Santa Maria é ameno, e a chance de temporal num dia específico fica em 5%.</p>
-    </div>
+
+    <ol class="doit">
+      <li><p><strong>Contrate a cobertura, com cancelamento até o fim de setembro.</strong> Esta é a decisão número um, e a de melhor custo-benefício: 42% de chance de chuva, 20% de chance de ser chuva forte, e um El Niño batendo recorde por cima. Se em 26 de setembro os modelos disserem que o dia vem seco, você cancela e perde nada.</p></li>
+      <li><p><strong>Pergunte ao buffet e ao cerimonial o que acontece se chover.</strong> Não a chance de chover — isso está aqui. O que muda no cronograma, quanto tempo leva para montar a cobertura, e até que horas dá para decidir no próprio dia. Essa resposta você consegue hoje, e ela vale mais que qualquer previsão.</p></li>
+      <li><p><strong>Não olhe previsão até 18 de setembro.</strong> Faltam 8 dias. Antes disso não existe informação nova sobre chuva, só aplicativo repetindo média histórica — e ansiedade de graça.</p></li>
+      <li><p><strong>A partir de 26 de setembro, olhe a discordância, não a média.</strong> Quando ECMWF, GFS, ICON e GEM concordarem dentro de uns 5 mm, o sinal de chuva é real. Enquanto discordarem, ninguém sabe — nem os aplicativos que mostram um número só.</p></li>
+      <li><p><strong>Pense no vento junto com o penteado.</strong> Um terço dos anos teve rajada acima de 40 km/h nesta data. Penteado e véu que aguentem vento, e um ponto com algum abrigo por perto, resolvem o risco quase todo.</p></li>
+      <li><p><strong>Mantenha a cerimônia às 17h30 e avise sobre o casaco leve.</strong> O horário é o melhor do dia: vento já caindo e luz bonita até o pôr do sol, às 18h37. E a temperatura cai uns 6 graus entre a cerimônia e o fim da festa.</p></li>
+    </ol>
   </section>
 
   <section class="band">
     <div class="head"><span class="lbl">Transparência</span><h2>De onde saiu cada número</h2><span class="rule"></span></div>
-    <p style="text-align:center; margin:0 auto">Três fontes produziram todos os números desta página. Abaixo está exatamente o que veio de cada uma.</p>
+    <p style="text-align:center; margin:0 auto">Nenhum número desta página é chute. Abaixo está exatamente o que veio de cada fonte, incluindo as que ainda não tinham o que dizer.</p>
 
     <div class="srcgroup">
       <div class="src">
@@ -373,46 +685,46 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
         <ul class="used">
           <li>a máxima típica de 23 °C e a mínima de 13 °C</li>
           <li>a chance de chuva de 42% e as quatro barras de intensidade</li>
-          <li>a grade dos 35 anos, com os 14 em que choveu no dia 3</li>
+          <li>a grade dos 35 anos, com os 14 em que choveu e os 10 em que ventou forte</li>
+          <li><strong>toda a seção do vento</strong>: a rajada mediana de 36 km/h, os 34% acima de 40 km/h, os 11% acima de 50, e a curva de vento hora a hora</li>
           <li>a curva de temperatura hora a hora da noite da festa</li>
           <li>os totais de outubro de 1997, 2002 e 2023, e a média de 203 mm</li>
-          <li>os 276 mm de julho de 2026 contra os 145 mm de um julho comum</li>
         </ul>
-        <span class="src-url">archive-api.open-meteo.com · período usado: 1991 a 2025</span>
+        <span class="src-url">archive-api.open-meteo.com · período usado: 1991 a 2025 · 385 dias na janela</span>
       </div>
       <div class="src">
         <div class="src-top"><span class="src-name">ECMWF SEAS5</span><span class="src-org">Centro Europeu de Previsões · via Open-Meteo</span></div>
-        <p class="src-used">O modelo climático de longo prazo do Centro Europeu, rodado 50 vezes. Daqui saiu <strong>uma única coisa</strong>, o gráfico das 50 bolinhas: as temperaturas de 13,6 a 29,0 °C e os volumes de chuva de cada cenário.</p>
-        <span class="src-url">seasonal-api.open-meteo.com · rodada de 1º de agosto de 2026</span>
+        <p class="src-used">O modelo climático de longo prazo do Centro Europeu, rodado 50 vezes. Daqui saíram <strong>o gráfico das 50 bolinhas</strong> (temperaturas de 14,2 a 32,4 °C e a chuva de cada cenário) e os <strong>52%</strong> de chance de chuva.</p>
+        <span class="src-url">seasonal-api.open-meteo.com · rodada de 10 de setembro de 2026</span>
       </div>
       <div class="src">
         <div class="src-top"><span class="src-name">NOAA / Climate Prediction Center</span><span class="src-org">Agência oceânica e atmosférica dos Estados Unidos</span></div>
-        <p class="src-used">O órgão que declara oficialmente quando existe El Niño no mundo. Daqui saíram <strong>dois números</strong>: o alerta de El Niño estar ativo e os <strong>81%</strong> de chance de ele ficar muito forte entre outubro e dezembro.</p>
-        <span class="src-url">cpc.ncep.noaa.gov · boletim de 9 de julho de 2026</span>
+        <p class="src-used">O órgão que declara oficialmente quando existe El Niño no mundo. Daqui saíram <strong>três números</strong>: os mais de 90% de chance de El Niño muito forte, os 69% de chance de ser o mais forte desde 1950, e a anomalia de +1,4 °C no Pacífico.</p>
+        <span class="src-url">cpc.ncep.noaa.gov · boletim ENSO de 13 de agosto de 2026 · alerta “El Niño Advisory” em vigor</span>
+      </div>
+      <div class="src">
+        <div class="src-top"><span class="src-name">ECMWF · GFS · ICON · GEM</span><span class="src-org">Europa · EUA · Alemanha · Canadá · via Open-Meteo</span></div>
+        <p class="src-used">Os quatro grandes modelos determinísticos, consultados hoje e <strong>sem nenhum número a dar</strong>: o alcance deles termina em 25 de setembro. Aparecem na tabela justamente para mostrar isso. A partir de 18 de setembro passam a ser a fonte principal desta página.</p>
+        <span class="src-url">api.open-meteo.com · alcance verificado em 10/09/2026: até 2026-09-25</span>
+      </div>
+      <div class="src">
+        <div class="src-top"><span class="src-name">MET Norway (yr.no)</span><span class="src-org">Instituto Meteorológico da Noruega</span></div>
+        <p class="src-used">Serviço público norueguês que combina modelos e acerta bem no curto prazo, sobretudo em chuva. Alcance de cerca de 9 dias, então hoje não diz nada sobre o dia 3. Vale a partir de <strong>24 de setembro</strong>.</p>
+        <span class="src-url">api.met.no/weatherapi/locationforecast</span>
+      </div>
+      <div class="src">
+        <div class="src-top"><span class="src-name">MetSul e Defesa Civil do RS</span><span class="src-org">Leitura humana, específica do Rio Grande do Sul</span></div>
+        <p class="src-used">Não geraram número nenhum sobre o dia 3, porque nenhuma fonte honesta geraria. Daqui veio a <strong>leitura de contexto</strong>: primavera de 2026 com chuva e temperatura acima da média no RS, e frequência de temporais acima do normal em outubro e novembro. Na semana do casamento, o radar da Defesa Civil é o que vale olhar no próprio dia.</p>
+        <span class="src-url">metsul.com · defesacivil.rs.gov.br</span>
+      </div>
+      <div class="src">
+        <div class="src-top"><span class="src-name">INMET e CPTEC/INPE</span><span class="src-org">Serviços oficiais brasileiros</span></div>
+        <p class="src-used">O INMET é quem emite os alertas de tempo severo com valor legal e mantém a estação de Santa Maria. O CPTEC roda os modelos brasileiros. Nenhum dos dois entra hoje, mas ambos são obrigatórios a partir de 1º de outubro.</p>
+        <span class="src-url">previsao.inmet.gov.br/4316907 · alertas2.inmet.gov.br · tempo.cptec.inpe.br</span>
       </div>
     </div>
 
-    <div class="stack m" style="margin-top:22px">
-      <h3 style="font-family:var(--title); font-weight:600; font-size:20px; color:var(--accent-text); margin:0">Fontes para acompanhar depois</h3>
-      <p style="font-size:15px">Estas três não geraram nenhum número desta página, porque hoje ainda não teriam o que informar sobre o dia 3. Elas passam a ser as mais importantes a partir de 18 de setembro.</p>
-      <div class="srcgroup">
-        <div class="src">
-          <div class="src-top"><span class="src-name">INMET</span><span class="src-org">Instituto Nacional de Meteorologia</span></div>
-          <p class="src-used">O serviço oficial brasileiro. É quem emite os alertas de tempo severo que têm valor legal, e mantém a estação de medição de Santa Maria. Será a fonte principal na semana do casamento.</p>
-          <span class="src-url">previsao.inmet.gov.br/4316907 · alertas2.inmet.gov.br</span>
-        </div>
-        <div class="src">
-          <div class="src-top"><span class="src-name">CPTEC / INPE</span><span class="src-org">Centro de Previsão de Tempo e Estudos Climáticos</span></div>
-          <p class="src-used">O centro brasileiro que roda os modelos próprios do país. Útil para comparar com os modelos europeus e americanos quando a data se aproximar.</p>
-          <span class="src-url">tempo.cptec.inpe.br</span>
-        </div>
-        <div class="src">
-          <div class="src-top"><span class="src-name">MetSul Meteorologia</span><span class="src-org">Serviço privado especializado no Sul do Brasil</span></div>
-          <p class="src-used">A melhor leitura interpretada especificamente para o Rio Grande do Sul. Explica em texto o que os modelos estão mostrando, o que ajuda bastante em setembro.</p>
-          <span class="src-url">metsul.com</span>
-        </div>
-      </div>
-    </div>
+    <p class="note" style="margin-top:20px">Uma nota técnica que vale registrar: a API pública do INMET (<code>apitempo.inmet.gov.br</code>) devolveu resposta vazia para todas as datas testadas, inclusive históricas. A lista de estações funciona e confirma a A803 de Santa Maria como operante. Ou seja, o INMET não é utilizável de forma automatizada hoje — use o site, e o ERA5 para qualquer coisa programática.</p>
   </section>
 
   <footer>
@@ -421,8 +733,8 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
       <path d="M29 12c-5 0-9-2-11-6 4-1 9 1 11 6zM29 12c5 0 9-2 11-6-4-1-9 1-11 6z" fill="currentColor" opacity=".55"/>
       <circle cx="29" cy="5" r="3.2" fill="currentColor" opacity=".7"/>
     </svg>
-    <span>Análise feita em 1º de agosto de 2026 · Santa Maria/RS, coordenadas −29,684 e −53,807</span>
-    <span>Esta página deve ser refeita toda semana. A partir de 18 de setembro de 2026, os números começam a mudar de verdade.</span>
+    <span>Análise refeita em 10 de setembro de 2026 · Santa Maria/RS, coordenadas −29,684 e −53,807</span>
+    <span>Próxima atualização com informação nova: <strong>18 de setembro de 2026</strong>, quando o dia 3 entra no alcance dos modelos.</span>
   </footer>
 </div>
 
@@ -472,30 +784,45 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     }
   });
 
-  var TMAX = [24.7,26.1,25.8,20.7,16.6,18.3,20.5,26.6,20.2,16.2,25.3,13.6,17.4,24.1,27.6,21.3,
-    19.1,21.7,17.2,22.7,14.6,19.1,26.4,18.1,21.4,29.0,17.2,17.3,14.4,25.8,27.9,23.1,22.5,21.4,
-    20.6,24.8,19.5,25.3,25.3,17.9,14.8,26.1,20.4,18.0,28.9,26.1,22.7,19.5,25.1,18.9];
-  var TMIN = [19.6,14.7,11.6,11.7,11.2,13.7,15.1,18.7,10.0,12.8,15.5,10.7,12.1,16.2,16.7,11.7,
-    14.9,15.9,11.5,17.8,6.6,8.2,14.0,10.7,9.3,16.8,9.1,12.8,8.2,10.7,16.6,13.2,11.3,9.7,11.6,
-    15.6,14.7,12.6,12.8,12.1,9.7,17.2,10.2,12.8,16.9,11.6,9.8,14.1,12.5,14.1];
-  var PREC = [15.1,0.4,0.0,4.5,31.8,35.9,17.5,1.3,0.0,2.1,0.7,5.3,0.1,0.6,0.0,2.5,1.0,15.4,0.7,
-    61.8,0.0,4.8,0.1,0.7,0.0,0.0,0.2,0.3,0.1,0.0,3.0,0.0,0.1,0.0,0.2,8.5,4.2,1.3,0.4,0.9,2.8,
-    1.0,14.0,0.0,3.3,0.0,0.0,37.3,0.0,7.7];
-  var YEARS = [[1991,20.6,7.5,0],[1992,20.0,14.4,0],[1993,18.9,15.6,2.5],[1994,22.1,15.5,16.7],
-    [1995,24.4,13.3,0],[1996,23.6,17.6,2.2],[1997,20.8,11.7,0.1],[1998,23.9,14.5,6.9],
-    [1999,13.4,4.7,0],[2000,26.8,16.6,33.8],[2001,17.7,14.3,1.1],[2002,24.4,19.5,42.3],
-    [2003,26.4,17.5,0],[2004,20.9,11.2,0],[2005,29.2,16.6,1.1],[2006,27.2,13.3,0],
-    [2007,29.1,17.8,0.9],[2008,23.4,9.8,0],[2009,20.8,7.3,0],[2010,18.2,6.3,0],
-    [2011,17.6,9.0,0],[2012,23.3,18.1,18.0],[2013,20.8,10.8,0],[2014,20.6,11.1,0],
-    [2015,16.3,10.1,0],[2016,24.0,13.3,0],[2017,21.6,10.6,0],[2018,19.5,13.3,0.3],
-    [2019,19.5,16.2,16.2],[2020,14.4,12.2,15.8],[2021,21.6,14.6,4.7],[2022,21.4,9.9,0],
-    [2023,23.6,8.6,8.4],[2024,17.8,9.8,0],[2025,26.0,17.6,14.6]];
+  /* SEAS5, rodada de 2026-09-10, 50 membros, alvo 2026-10-03 */
+  var TMAX = [24.6,25.4,19.2,20.5,16.3,21.4,22.7,31.2,21.7,19.6,16.4,20.5,25.2,29.6,21.7,22.1,
+    22.4,20.0,23.1,20.9,26.7,16.2,18.6,24.7,19.0,23.9,16.6,14.2,19.7,24.7,25.3,27.6,20.3,18.8,
+    20.5,19.3,22.8,23.6,32.4,22.8,16.9,27.8,19.5,19.9,22.4,21.9,20.4,25.4,25.9,27.9];
+  var TMIN = [13.0,16.5,14.0,12.0,7.4,11.6,11.2,20.0,10.2,10.8,6.5,16.0,17.5,12.5,7.3,15.5,14.9,
+    13.9,17.0,14.3,14.9,5.7,13.5,14.5,5.3,16.2,7.4,7.7,14.0,16.5,12.8,9.3,8.7,14.0,7.7,6.4,14.1,
+    17.7,25.0,12.9,11.1,16.5,11.5,14.4,19.0,13.1,17.1,16.3,14.4,20.8];
+  var PREC = [6.7,68.3,2.7,1.3,0.0,0.4,0.0,0.0,0.2,0.4,0.5,5.7,7.8,0.0,0.0,0.7,13.8,7.9,41.7,1.2,
+    0.8,0.0,25.0,6.6,0.0,0.4,0.0,0.0,1.0,0.3,1.8,0.0,0.0,9.8,0.0,0.0,1.7,1.6,0.5,46.4,10.8,0.0,
+    0.2,1.8,10.9,67.0,2.2,39.6,3.7,27.9];
+
+  /* ERA5: 3 de outubro de cada ano — [ano, Tmax, Tmin, chuva, rajada máx] */
+  var YEARS = [[1991,20.6,7.5,0.0,49.3],[1992,20.0,14.4,0.0,28.8],[1993,18.9,15.6,2.5,31.0],
+    [1994,22.1,15.5,16.7,33.1],[1995,24.4,13.3,0.0,39.2],[1996,23.6,17.6,2.2,20.5],
+    [1997,20.8,11.7,0.1,46.1],[1998,23.9,14.5,6.9,35.3],[1999,13.4,4.7,0.0,30.2],
+    [2000,26.8,16.6,33.8,39.6],[2001,17.7,14.3,1.1,48.6],[2002,24.4,19.5,42.3,44.6],
+    [2003,26.4,17.5,0.0,34.2],[2004,20.9,11.2,0.0,28.1],[2005,29.2,16.6,1.1,33.8],
+    [2006,27.2,13.3,0.0,25.6],[2007,29.1,17.8,0.9,35.6],[2008,23.4,9.8,0.0,30.6],
+    [2009,20.8,7.3,0.0,34.6],[2010,18.2,6.3,0.0,33.8],[2011,17.6,9.0,0.0,28.8],
+    [2012,23.3,18.1,18.0,37.1],[2013,20.8,10.8,0.0,40.3],[2014,20.6,11.1,0.0,50.0],
+    [2015,16.3,10.1,0.0,34.6],[2016,24.0,13.3,0.0,34.9],[2017,21.6,10.6,0.0,40.3],
+    [2018,19.5,13.3,0.3,29.9],[2019,19.5,16.2,16.2,57.2],[2020,14.4,12.2,15.8,58.7],
+    [2021,21.6,14.6,4.7,29.2],[2022,21.4,9.9,0.0,32.4],[2023,23.6,8.6,8.4,40.7],
+    [2024,17.8,9.8,0.0,29.5],[2025,26.0,17.6,14.6,30.6]];
+
+  /* ERA5 hora a hora, 3/out ±5 d — [hora, temp média, temp p25, temp p75] */
   var DIURNAL = [[0,15.5,13.0,17.6],[1,15.1,12.5,17.5],[2,14.6,12.0,17.1],[3,14.2,11.4,16.7],
     [4,13.9,11.1,16.6],[5,13.7,10.8,16.3],[6,13.5,10.4,16.2],[7,13.9,11.0,16.4],
     [8,15.5,13.0,17.4],[9,17.0,14.7,18.9],[10,18.5,16.2,20.2],[11,19.8,17.3,21.9],
     [12,20.8,18.1,22.9],[13,21.6,18.8,23.7],[14,22.0,19.2,24.1],[15,22.0,19.4,24.2],
     [16,21.7,19.4,23.7],[17,21.2,18.9,23.1],[18,20.0,17.8,21.8],[19,18.7,16.5,20.6],
     [20,17.8,15.6,19.6],[21,17.2,14.9,19.2],[22,16.7,14.2,18.6],[23,16.1,13.7,18.4]];
+
+  /* ERA5 hora a hora, 1996-2025 — [hora, rajada média, rajada p90] em km/h */
+  var GUST = [[0,23.4,36.7],[1,22.8,35.6],[2,22.2,34.9],[3,21.8,34.9],[4,21.5,33.5],
+    [5,21.0,33.5],[6,20.6,32.8],[7,21.1,34.9],[8,24.5,36.4],[9,27.7,40.7],[10,29.8,42.8],
+    [11,30.6,43.2],[12,31.3,43.9],[13,31.7,46.8],[14,31.4,45.4],[15,30.9,43.2],
+    [16,29.8,42.8],[17,28.5,39.2],[18,25.3,36.7],[19,22.4,34.2],[20,22.7,35.3],
+    [21,23.4,37.4],[22,23.7,37.4],[23,23.8,37.4]];
 
   function hex2rgb(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
   function mix(a,b,f){ return "rgb("+Math.round(a[0]+(b[0]-a[0])*f)+","+Math.round(a[1]+(b[1]-a[1])*f)+","+Math.round(a[2]+(b[2]-a[2])*f)+")"; }
@@ -509,7 +836,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     return mix(hex2rgb(css("--rain-mid")), hex2rgb(css("--rain-hi")), Math.min(1,mm/45));
   }
 
-  var mode = "T";
+  var mode = "R";   /* a chuva é a pergunta principal, então abre nela */
   var cv = document.getElementById("swarm"), ctx = cv.getContext("2d");
   var pts = [], W = 0, H = 220, hoverI = -1, prog = reduce ? 1 : 0;
   var lastW = 0, lastEW = 0;
@@ -519,9 +846,12 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     W = rect.width; lastW = W;
     if(W <= 0) return;
     cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
-    var padL = 14, padR = 14, axisY = H - 36, r = 7;
+    /* bolinha menor em tela estreita: com r=7 as 50 empilham alto demais e
+       encostam no topo do canvas. */
+    var narrow = W < 430;
+    var padL = 14, padR = 14, axisY = H - 36, r = narrow ? 5.4 : 7;
     var vals = mode === "T" ? TMAX : PREC;
-    var lo = mode === "T" ? 12 : 0, hi = mode === "T" ? 30 : 65;
+    var lo = mode === "T" ? 12 : 0, hi = mode === "T" ? 34 : 70;
     var xOf = function(v){ return padL + (Math.max(lo,Math.min(hi,v))-lo)/(hi-lo)*(W-padL-padR); };
     var rows = [];
     pts = vals.map(function(v,idx){ return {i:idx, v:v, x:xOf(v)}; })
@@ -546,7 +876,11 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     ctx.strokeStyle = css("--rule"); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0,axisY+.5); ctx.lineTo(W,axisY+.5); ctx.stroke();
     ctx.fillStyle = css("--fg-soft"); ctx.font = "11.5px " + SANS; ctx.textAlign = "center";
-    (mode === "T" ? [14,18,22,26,30] : [0,15,30,45,60]).forEach(function(v){
+    /* menos marcas no eixo quando é estreito, senão os rótulos se sobrepõem */
+    var narrow = W < 430;
+    var ticks = mode === "T" ? (narrow ? [14,22,30] : [14,18,22,26,30,34])
+                             : (narrow ? [0,30,60] : [0,15,30,45,60]);
+    ticks.forEach(function(v){
       ctx.beginPath(); ctx.moveTo(xOf(v),axisY); ctx.lineTo(xOf(v),axisY+5); ctx.stroke();
       ctx.fillText(mode === "T" ? v+"°" : v+" mm", xOf(v), axisY+21);
     });
@@ -629,7 +963,8 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
       yOut = document.getElementById("yearOut"), curYr = null;
   YEARS.forEach(function(r){
     var b = document.createElement("button");
-    b.type = "button"; b.className = "yr" + (r[3] >= 1 ? " wet" : "");
+    b.type = "button";
+    b.className = "yr" + (r[3] >= 1 ? " wet" : "") + (r[4] >= 40 ? " gusty" : "");
     b.textContent = String(r[0]).slice(2);
     b.setAttribute("aria-pressed","false");
     b.setAttribute("aria-label", "3 de outubro de " + r[0]);
@@ -639,8 +974,11 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
       yOut.classList.remove("idle");
       var c = r[3] >= 1 ? "choveu <b>" + br(r[3]) + " mm</b>"
             : r[3] > 0 ? "caiu quase nada, só " + br(r[3]) + " mm" : "<b>não choveu</b>";
+      var v = r[4] >= 50 ? ", e ventou muito, rajada de <b>" + br(r[4]) + " km/h</b>"
+            : r[4] >= 40 ? ", com vento forte de <b>" + br(r[4]) + " km/h</b>"
+            : ", com vento tranquilo de " + br(r[4]) + " km/h";
       yTxt.innerHTML = "<b>3 de outubro de " + r[0] + ":</b> máxima de <b>" + br(r[1]) +
-        " °C</b>, mínima de <b>" + br(r[2]) + " °C</b>, e " + c + ".";
+        " °C</b>, mínima de <b>" + br(r[2]) + " °C</b>, " + c + v + ".";
     }
     b.addEventListener("click", show);
     b.addEventListener("mouseenter", show);
@@ -648,7 +986,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
   });
 
   var ev = document.getElementById("evening"), ectx = ev.getContext("2d");
-  var eW = 0, eH = 210, eHover = -1;
+  var eW = 0, eH = 250, eHover = -1;
   var evTxt = document.getElementById("evTxt"), evOut = document.getElementById("evOut");
   function eBuild(){
     var rect = ev.getBoundingClientRect(), dpr = devicePixelRatio || 1;
@@ -656,21 +994,42 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
     if(eW <= 0) return;
     ev.width = eW*dpr; ev.height = eH*dpr; ectx.setTransform(dpr,0,0,dpr,0,0);
   }
-  function eX(h){ return 36 + h/23*(eW-52); }
-  function eY(t){ return 18 + (25-t)/(25-9)*(eH-52); }
+  /* eixo esquerdo = temperatura 9..25 °C; eixo direito = rajada 0..40 km/h.
+     As margens encolhem em tela estreita para sobrar largura ao gráfico. */
+  function ePad(){ return eW < 430 ? {l:28, r:24} : {l:40, r:34}; }
+  function eX(h){ var p = ePad(); return p.l + h/23*(eW-p.l-p.r); }
+  function eY(t){ return 18 + (25-t)/(25-9)*(eH-58); }
+  function eG(g){ return (eH-40) - g/40*(eH-58); }
   function drawEv(){
     if(!eW) return;
     ectx.clearRect(0,0,eW,eH);
-    var i;
-    ectx.strokeStyle = css("--rule"); ectx.lineWidth = 1;
-    ectx.fillStyle = css("--fg-soft"); ectx.font = "11px " + SANS; ectx.textAlign = "right";
-    [12,16,20,24].forEach(function(t){
-      ectx.beginPath(); ectx.moveTo(36,eY(t)+.5); ectx.lineTo(eW-14,eY(t)+.5); ectx.stroke();
-      ectx.fillText(t+"°", 30, eY(t)+3.5);
-    });
-    ectx.textAlign = "center";
-    [0,6,12,18,23].forEach(function(h){ ectx.fillText((h<10?"0":"")+h+"h", eX(h), eH-8); });
+    var i, base = eH-40, p = ePad(), narrow = eW < 430;
 
+    /* barras de vento primeiro, para ficarem atrás da linha de temperatura */
+    var bw = (eW-p.l-p.r)/24*0.62;
+    ectx.fillStyle = css("--wind-soft");
+    GUST.forEach(function(g){
+      var y = eG(g[1]);
+      ectx.fillRect(eX(g[0])-bw/2, y, bw, base-y);
+    });
+
+    ectx.strokeStyle = css("--rule"); ectx.lineWidth = 1;
+    ectx.fillStyle = css("--fg-soft");
+    ectx.font = (narrow ? "10px " : "11px ") + SANS; ectx.textAlign = "right";
+    (narrow ? [12,18,24] : [12,16,20,24]).forEach(function(t){
+      ectx.beginPath(); ectx.moveTo(p.l,eY(t)+.5); ectx.lineTo(eW-p.r,eY(t)+.5); ectx.stroke();
+      ectx.fillText(t+"°", p.l-6, eY(t)+3.5);
+    });
+    /* escala do vento, à direita, na cor do vento */
+    ectx.fillStyle = css("--wind"); ectx.textAlign = "left";
+    [0,20,40].forEach(function(g){ ectx.fillText(g, eW-p.r+4, eG(g)+3.5); });
+
+    ectx.fillStyle = css("--fg-soft"); ectx.textAlign = "center";
+    (narrow ? [0,8,16,23] : [0,6,12,18,23]).forEach(function(h){
+      ectx.fillText((h<10?"0":"")+h+"h", eX(h), eH-8);
+    });
+
+    /* faixa de variação da temperatura */
     ectx.beginPath();
     for(i=0;i<24;i++){ var p = DIURNAL[i]; i? ectx.lineTo(eX(p[0]),eY(p[3])) : ectx.moveTo(eX(p[0]),eY(p[3])); }
     for(i=23;i>=0;i--){ var q = DIURNAL[i]; ectx.lineTo(eX(q[0]),eY(q[2])); }
@@ -682,7 +1041,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
 
     var cx = eX(17.5);
     ectx.strokeStyle = css("--slate"); ectx.lineWidth = 1.6; ectx.setLineDash([4,4]);
-    ectx.beginPath(); ectx.moveTo(cx,15); ectx.lineTo(cx,eH-24); ectx.stroke(); ectx.setLineDash([]);
+    ectx.beginPath(); ectx.moveTo(cx,15); ectx.lineTo(cx,base); ectx.stroke(); ectx.setLineDash([]);
     ectx.fillStyle = css("--slate"); ectx.textAlign = "center"; ectx.font = "700 11px " + SANS;
     ectx.fillText("17h30", cx, 11);
 
@@ -696,13 +1055,15 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
   function ePick(e){
     var rect = ev.getBoundingClientRect();
     var mx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    var h = Math.max(0, Math.min(23, Math.round((mx-36)/(eW-52)*23)));
+    var p = ePad();
+    var h = Math.max(0, Math.min(23, Math.round((mx-p.l)/(eW-p.l-p.r)*23)));
     if(h !== eHover){
       eHover = h; drawEv();
-      var d = DIURNAL[h];
+      var d = DIURNAL[h], g = GUST[h];
       evOut.classList.remove("idle");
       evTxt.innerHTML = "<b>" + (h<10?"0":"") + h + "h00:</b> média de <b>" + br(d[1]) +
-        " °C</b>, variando entre " + br(d[2]) + " °C e " + br(d[3]) + " °C conforme o ano.";
+        " °C</b> (entre " + br(d[2]) + " e " + br(d[3]) + " conforme o ano), com rajada média de <b>" +
+        br(g[1]) + " km/h</b>.";
     }
   }
   ev.addEventListener("mousemove", ePick);
@@ -710,7 +1071,7 @@ footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
   ev.addEventListener("touchmove", function(e){ ePick(e); e.preventDefault(); }, {passive:false});
   ev.addEventListener("mouseleave", function(){
     eHover = -1; drawEv(); evOut.classList.add("idle");
-    evTxt.textContent = "Passe o mouse no gráfico para ver a temperatura de cada horário.";
+    evTxt.textContent = "Passe o mouse no gráfico para ver a temperatura e o vento de cada horário.";
   });
 
   var fills = document.querySelectorAll(".bar-fill");

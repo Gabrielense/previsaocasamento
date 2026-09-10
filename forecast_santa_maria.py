@@ -41,13 +41,24 @@ DET_MODELS = [
     "ecmwf_ifs025",        # ECMWF IFS  - best global model by objective scores
     "gfs_seamless",        # NOAA GFS
     "icon_seamless",       # DWD ICON
+    "gem_seamless",        # CMC GEM (Canada)
     "ukmo_seamless",       # UK Met Office
     "meteofrance_seamless",  # Meteo-France ARPEGE
     "jma_seamless",        # JMA GSM
 ]
+# Open-Meteo's own multi-model blend. Kept apart from DET_MODELS because it is
+# not an independent centre - it is a combination of the rows above, so counting
+# it as a seventh opinion would double-count the models it already contains.
+BLEND_MODEL = "best_match"
 ENS_MODELS = ["ecmwf_ifs025", "gfs025", "icon_seamless"]
 
-DAILY_VARS = "temperature_2m_max,temperature_2m_min,precipitation_sum"
+# Rain is the variable this whole repo exists to answer; gusts were added later
+# because no consumer forecast surfaces them, and above ~40 km/h they ruin a veil
+# and any light decoration well before rain would.
+DAILY_VARS = ("temperature_2m_max,temperature_2m_min,precipitation_sum,"
+              "wind_gusts_10m_max")
+CLIM_VARS = ("temperature_2m_max,temperature_2m_min,precipitation_sum,"
+             "wind_gusts_10m_max")
 
 
 # ----------------------------------------------------------------------------
@@ -106,16 +117,18 @@ def prob(vals, thr, op="ge"):
 # ----------------------------------------------------------------------------
 def climatology(target):
     os.makedirs(CACHE, exist_ok=True)
-    path = os.path.join(CACHE, f"era5_{CLIM_START[:4]}_{CLIM_END[:4]}.json")
+    # v2 = the cache that also carries wind gusts. The v1 file lacked them, so
+    # the name is versioned rather than reused, and an old checkout re-downloads
+    # instead of silently reading a file with a missing column.
+    path = os.path.join(CACHE, f"era5_v2_{CLIM_START[:4]}_{CLIM_END[:4]}.json")
     if os.path.exists(path):
         d = json.load(open(path, encoding="utf-8"))
     else:
-        print("  downloading ERA5 archive (one-off, ~35 yr)...")
+        print("  downloading ERA5 archive (one-off, ~35 yr, now incl. gusts)...")
         d = get("https://archive-api.open-meteo.com/v1/archive",
                 latitude=LAT, longitude=LON,
                 start_date=CLIM_START, end_date=CLIM_END,
-                daily="temperature_2m_max,temperature_2m_min,precipitation_sum",
-                timezone=TZ)["daily"]
+                daily=CLIM_VARS, timezone=TZ)["daily"]
         json.dump(d, open(path, "w", encoding="utf-8"))
 
     # day-of-year window around the target, wrapping across years
@@ -124,17 +137,19 @@ def climatology(target):
         dt = target + timedelta(days=off)
         keep.add((dt.month, dt.day))
 
-    tmax, tmin, pr, exact = [], [], [], []
+    tmax, tmin, pr, gust, exact = [], [], [], [], []
     for i, ds in enumerate(d["time"]):
         y, m, dd = (int(x) for x in ds.split("-"))
         if (m, dd) in keep:
             tmax.append(d["temperature_2m_max"][i])
             tmin.append(d["temperature_2m_min"][i])
             pr.append(d["precipitation_sum"][i])
+            gust.append(d["wind_gusts_10m_max"][i])
         if (m, dd) == (target.month, target.day):
             exact.append((y, d["temperature_2m_max"][i],
-                          d["temperature_2m_min"][i], d["precipitation_sum"][i]))
-    return {"tmax": tmax, "tmin": tmin, "precip": pr, "exact": exact}
+                          d["temperature_2m_min"][i], d["precipitation_sum"][i],
+                          d["wind_gusts_10m_max"][i]))
+    return {"tmax": tmax, "tmin": tmin, "precip": pr, "gust": gust, "exact": exact}
 
 
 # ----------------------------------------------------------------------------
@@ -156,19 +171,60 @@ def seasonal(target):
 # ----------------------------------------------------------------------------
 # Tier C - deterministic multi-model + ensembles  (lead <= 15 days)
 # ----------------------------------------------------------------------------
+VARS = ("temperature_2m_max", "temperature_2m_min", "precipitation_sum",
+        "wind_gusts_10m_max")
+
+
 def deterministic(target):
     lead = (target - date.today()).days + 1
+    models = DET_MODELS + [BLEND_MODEL]
     d = get("https://api.open-meteo.com/v1/forecast",
             latitude=LAT, longitude=LON, daily=DAILY_VARS, timezone=TZ,
-            forecast_days=min(16, max(1, lead)), models=",".join(DET_MODELS))["daily"]
+            forecast_days=min(16, max(1, lead)), models=",".join(models))["daily"]
     if target.isoformat() not in d["time"]:
         return None
     i = d["time"].index(target.isoformat())
     rows = {}
-    for m in DET_MODELS:
-        rows[m] = {v: d.get(f"{v}_{m}", [None] * (i + 1))[i]
-                   for v in ("temperature_2m_max", "temperature_2m_min", "precipitation_sum")}
+    for m in models:
+        rows[m] = {v: d.get(f"{v}_{m}", [None] * (i + 1))[i] for v in VARS}
     return rows
+
+
+def metno(target):
+    """MET Norway (yr.no) - public Norwegian blend, strong on short-range rain.
+
+    Its locationforecast product only reaches about 9 days out, so this returns
+    None for anything further. That is the honest answer, not a failure: asking
+    yr.no about a date past its horizon is the exact mistake this repo is about.
+    """
+    req = urllib.request.Request(
+        "https://api.met.no/weatherapi/locationforecast/2.0/compact"
+        f"?lat={LAT}&lon={LON}",
+        # met.no rejects anonymous clients; a contact string is their stated rule.
+        headers={"User-Agent": "meteorologia-casamento/1.0 github.com/Gabrielense"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            series = json.loads(r.read().decode())["properties"]["timeseries"]
+    except Exception as e:
+        print(f"  [warn] met.no: {e}")
+        return None
+
+    iso = target.isoformat()
+    tmax, tmin, rain = [], [], 0.0
+    for step in series:
+        if not step["time"].startswith(iso):
+            continue
+        inst = step["data"]["instant"]["details"]
+        if "air_temperature" in inst:
+            tmax.append(inst["air_temperature"])
+            tmin.append(inst["air_temperature"])
+        nxt = step["data"].get("next_1_hours") or step["data"].get("next_6_hours") or {}
+        rain += nxt.get("details", {}).get("precipitation_amount", 0.0)
+    if not tmax:
+        return None
+    return {"temperature_2m_max": round(max(tmax), 1),
+            "temperature_2m_min": round(min(tmin), 1),
+            "precipitation_sum": round(rain, 1)}
 
 
 def ensembles(target):
@@ -220,10 +276,13 @@ def main():
     print("  Tmax  C   " + fmt(summarize(c["tmax"])))
     print("  Tmin  C   " + fmt(summarize(c["tmin"])))
     print("  Rain mm   " + fmt(summarize(c["precip"])))
+    print("  Gust km/h " + fmt(summarize(c["gust"])))
     print(f"  P(rain >=1mm)={prob(c['precip'],1)}%   >=5mm={prob(c['precip'],5)}%   "
           f">=10mm={prob(c['precip'],10)}%   >=20mm={prob(c['precip'],20)}%")
     print(f"  P(Tmax>=25C)={prob(c['tmax'],25)}%   P(Tmin<=10C)={prob(c['tmin'],10,'le')}%")
-    snap["climatology"] = {k: summarize(c[k]) for k in ("tmax", "tmin", "precip")}
+    print(f"  P(gust>=40km/h)={prob(c['gust'],40)}%   >=50={prob(c['gust'],50)}%   "
+          f">=60={prob(c['gust'],60)}%")
+    snap["climatology"] = {k: summarize(c[k]) for k in ("tmax", "tmin", "precip", "gust")}
 
     # --- tier selection ------------------------------------------------------
     if lead < 0:
@@ -232,17 +291,28 @@ def main():
         print(f"\n[2] DETERMINISTIC MULTI-MODEL  (lead {lead} d - inside skilful range)")
         det = deterministic(target)
         if det:
-            print(f"  {'model':<22}{'Tmax':>8}{'Tmin':>8}{'Rain mm':>10}")
+            print(f"  {'model':<22}{'Tmax':>8}{'Tmin':>8}{'Rain mm':>10}{'Gust':>8}")
             for m, r in det.items():
-                print(f"  {m:<22}{str(r['temperature_2m_max']):>8}"
-                      f"{str(r['temperature_2m_min']):>8}{str(r['precipitation_sum']):>10}")
+                tag = m + ("  [blend]" if m == BLEND_MODEL else "")
+                print(f"  {tag:<22}{str(r['temperature_2m_max']):>8}"
+                      f"{str(r['temperature_2m_min']):>8}{str(r['precipitation_sum']):>10}"
+                      f"{str(r['wind_gusts_10m_max']):>8}")
+            # Spread is computed over the independent centres only: including the
+            # blend would shrink it artificially, since it is their own average.
+            indep = {m: r for m, r in det.items() if m != BLEND_MODEL}
             for var, lbl in (("temperature_2m_max", "Tmax"), ("temperature_2m_min", "Tmin"),
-                             ("precipitation_sum", "Rain")):
-                vals = [r[var] for r in det.values() if r[var] is not None]
+                             ("precipitation_sum", "Rain"), ("wind_gusts_10m_max", "Gust")):
+                vals = [r[var] for r in indep.values() if r[var] is not None]
                 if vals:
                     print(f"  -> {lbl} model spread: {min(vals)} .. {max(vals)}  "
                           f"(mean {round(st.fmean(vals),1)})")
             snap["deterministic"] = det
+
+        mn = metno(target)
+        print("\n[2b] MET NORWAY / yr.no  (public blend, horizon ~9 d)")
+        print(f"  {mn}" if mn else "  target beyond yr.no horizon - nothing to report")
+        if mn:
+            snap["metno"] = mn
 
         print(f"\n[3] ENSEMBLES  ({', '.join(ENS_MODELS)})")
         ens = ensembles(target)
